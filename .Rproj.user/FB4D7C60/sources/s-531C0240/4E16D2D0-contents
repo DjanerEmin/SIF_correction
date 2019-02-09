@@ -1,0 +1,90 @@
+---
+title: "Method For Acquiring and Comparing Spatially Explicit Measurements of Sun-induced Flourescence on the Ground"
+subtitle: 'Methods: spatiotemporal SIF measurements on the ground'
+output: 
+    html_document:
+        toc: true
+        toc_depth: 4
+        toc_float:
+          collapsed: false
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r, include=FALSE}
+load("data/meta_out.rdata")
+library(tidyverse)
+```
+
+***
+
+### Study site
+
+The test experiment was conducted inside one sugar beet field (*Beta vulgaris* L.) located inside the Selhausen study area. The study area lies in Northrhein-Westphalia province of Germany between the cities of Aachen and Cologne. With an approximate size of 27 km$^2$, the site is part of the [Tereno](http://www.tereno.net/observatories/ELRV_Observatory) network of environmental observatory infrastructure and, therefore, an object of intensive research. One aspect of this research is the annual overflight by a hyperspectral sensor specifically designed for SIF retrieval ([HyPlant](https://twitter.com/HyPlant)). The area itself is predominantly used for agriculture with cereals and sugar beet making up the largest proportion of crops grown. The climate is oceanic with mean annual air temperature around 10$^{\circ}$ C and mean annual precipitation slightly above the country average - around 700 mm. 
+
+![Overview map of Selhausen study area. Field site is numbers 3 and 61 in "Industry" section. *Basemap source: Open Street Map; Coordinate reference system: EPSG:32632 (Datum: WGS 84, Projection: UTM Zone 32N)*"](visuals/Field_guide_map.png)
+
+This particular sugar beet field was chosen as a test site because it is also part of a long term experimental cite in TERENO. An eddy covariance measurement station is installed in the middle of the field. Furthermore, the field exhibits a significant heterogeneity in soil properties and so provides possibility to study the relationship between external (e.g. soil conditions), structural, and physiological factors and SIF. 
+
+
+
+### Instrumental setup
+
+
+
+#### Fluorescence Box - FLOX
+
+FLOX is an automated field spectroscopy device originally designed to collect unattended, continuous, long-term hyperspectral measurements. It contains two spectrometers - high resolution QEPro spectrometer (Ocean Optics Inc. USA) programmed specifically for passive retrieval of fluorescence from plants, and a FLAME spectrometer (Ocean Optics Inc. USA) programmed in the VIS and NIR spectral range. Each of those spectrometers is connected to upward and downward looking optical fibers which allow to sequentially measure the solar irradiance and the reflected radiance from the canopy. 
+
+One elementary measurement cycle consist of a sequencial acquisition of dark current, incoming radation, reflected radiation, second incoming radiation, and a second dark current. This procedure is repeated consecutively for both spectrometers. The abovementioned sequence of readings comprises  one measurement cycle. An automatic optimization of integration time based on incoming radiation is implemented at each cycle. One measurement cycle lasts approximately 30 seconds depending on light intensity. 
+
+
+```{r echo=FALSE, results='asis'}
+
+a <- c( "Wavelength range", "Spectral Sampling Interval (SSI)", "Spectral resolution (FWHM)", "Signal to Noise Ratio (SNR)","Field Of View (FOV)", "", "", "")
+
+b <- c( "650 - 800 nm", "0.17 nm" , "0.3 nm", "1000", "Upwelling radiance 25." , "", "", "")
+
+d <- c("450 - 950 nm" , "0.65 nm" , "1.5 nm ", "1000",  "Downwelling radiance 180", "", "", "")
+
+e <- c("nm", "nm", "nm", "","Dual FOV.", "", "", "")
+
+c <- cbind(Characteristic = a, Units = e, QEPro = b, FLAME = d )
+library(knitr)
+kable(c[1:5,c(1,3,4)], caption = "Sensor chararacteristics for the FLuorescence bOX (FLOX) device", label = "mytable") 
+```
+
+#### Mobile measurement set-up
+
+The FLOX was equipped with a backpack harness (RuckPac) for the purposes of collecting spatially distributed hyperspectral reflectance and SIF across the study area. The optic fibers were attached to a lightweight tripod extendend via additional horizontal extension arm.  This ensured a height of (2.20m +/- 0.10) at each location . The footprint on the ground at this height given the 25$^{\circ}$ FOV was approximately 1 m. At the end of the tripod extension arm, both upward and downward looking optical fibers were attached to a selfmade gimbal device. This ensured vertical leveling at all times. 
+
+
+
+```{r echo= FALSE, warning= FALSE, message=FALSE, fig.height=6}
+knitr::include_graphics("visuals/mobile_pictogram2.png", dpi = 100)
+```
+
+
+### Measurement protocol - test case 
+
+One transect was measured twice on 02.August 2018 - in the morning hours (between 10:00 and 10:30 LT) and early afternoon hours (Between 13:00 and 13:30 LT). The transect was chosen to be representative of the variability of soil conditions inside field. To minimize bi-directional effects and avoid shadowing from the tripod, the optic fibers attached to the gimbal device faced south at all times. To minimize crop damaging we moved along the tractor tracks to relocate the setup between sampling locations. 
+
+
+```{r study-area,  fig.cap= "Above - The study site sugar beet field and transect with six observations. Notice the difference in vegetation cover between East and West. *Basemap source: HyPlant image from 02.08.2018; Coordinate reference system: EPSG:32632, Datum:WGS 84, Projection:UTM Zone 32N* Bellow - Schematic overview of data collection procedure", fig.width=9, fig.height=9}
+
+# from meta analysis
+m2
+```
+
+
+
+![](visuals/scheme1.jpg)
+
+![](visuals/title1.png)

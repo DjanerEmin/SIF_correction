@@ -1,0 +1,470 @@
+---
+title: "Earsel_poster_final_draft"
+author: "D. Emin"
+date: "January 16, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(knitr)
+library(foreign)
+```
+
+```{r input}
+# input
+# here import the environment which you created 
+# it includes all objects we will need
+# 
+load("inputs.rdata")
+```
+
+![](D:/Poster_earsel/scheme1.jpg)
+
+
+# AtmoFLEX
+
+On August 2nd, Hyplant repeated the low altitude flight path performed a month earlier. On the ground during this overflight we repeated the spatiotemporal measurement procedure measuring SIF using FLOX from several locations in 3 sugar beet and one potato field - the only two crop types vegetating in August. 
+
+The area was hit by a heat wave The area was hit by a prolongued heat wave starting on 26th of July. Farmers on the ground were able to water limited ammount of potato fields with 30mm per week, which is needed for the crop to survive.
+
+Table bellow sumarizes the mobile FLOX data for each crop. From the 17 sugar beet locations visited this time, 5 were visited and measured twice - pre-noon and after-noon observations. This way we can study more in depth the link between LAI, SIF, and incomming radiation.
+
+```{r}
+locs <- read.dbf("D:/Fieldwork_2018/Shapes/gps_0108.dbf")[,1:6]
+locs$gps = as.numeric(as.character(locs$name))
+locs$cmt = as.numeric(as.character(locs$cmt))
+flox <- readxl::read_excel("D:/Fieldwork_2018/Data/Uwe-3/Mobile-71/ALL_INDEX_FLOX_2018-09-04_15_11_19.xlsx")
+
+flox <- flox %>% mutate(`SIF_A_ifld.yield [a./u.]` = `SIF_A_ifld [mW m-2nm-1sr-1]`/`Incoming at 750nm [W m-2nm-1sr-1]`,
+                        `SIF_B_ifld.yield [a./u.]` = `SIF_B_ifld [mW m-2nm-1sr-1]`/`Incoming at 750nm [W m-2nm-1sr-1]`,
+                        `SIF_A_sfm.yield [a./u.]` = `SIF_A_sfm [mW m-2nm-1sr-1]`/`Incoming at 750nm [W m-2nm-1sr-1]`,
+                        `SIF_B_sfm.yield [a./u.]` = `SIF_B_sfm [mW m-2nm-1sr-1]`/`Incoming at 750nm [W m-2nm-1sr-1]`)
+
+diurnal <- flox %>% filter(doy.dayfract > 215)
+mobile <- flox %>% filter(doy.dayfract > 214 & doy.dayfract < 215, lu == "sugar.beet" | lu == "potato")
+mobile <- left_join(mobile, locs, by="gps")
+```
+
+```{r}
+diurnal$date <- diurnal$`datetime [UTC]` 
+diurnal.5mean <- openair::timeAverage(diurnal, avg.time = "5 min", statistic = "mean")
+diurnal.5sd <- openair::timeAverage(diurnal, avg.time = "5 min", statistic = "sd")
+diurnal.5mean$`SIF_A_ifld [mW m-2nm-1sr-1].sd` <- diurnal.5sd$`SIF_A_ifld [mW m-2nm-1sr-1]`
+```
+
+```{r}
+fig1 <- ggplot(diurnal.5mean, aes(`datetime [UTC]`, `SIF_A_ifld [mW m-2nm-1sr-1]`)) 
+fig1 <- fig1 + geom_line() + theme_bw() + stat_smooth(se=FALSE)
+```
+
+```{r}
+fig1 <- fig1 + 
+    geom_ribbon(aes( ymin = `SIF_A_ifld [mW m-2nm-1sr-1]` - `SIF_A_ifld [mW m-2nm-1sr-1].sd`, ymax = `SIF_A_ifld [mW m-2nm-1sr-1]` + `SIF_A_ifld [mW m-2nm-1sr-1].sd`), fill= '#D3D3D3') +
+    geom_line() + geom_smooth(se = FALSE)
+fig1
+```
+
+
+```{r table1}
+kable(mobile %>% filter(lu == "sugar.beet") %>% group_by(lu) %>% 
+        summarise(n.obs = n(), 
+                 n.locs = length(unique(loc)),
+                    LAI = round(mean(cmt),2),
+             SIF_A_ifld = round(mean(`SIF_A_ifld [mW m-2nm-1sr-1]`),2),
+             SIF_B_ifld = round(mean(`SIF_B_ifld [mW m-2nm-1sr-1]`),2)))
+```
+
+On 1st and 3rd August FLOX was installed on a permanent position and recorded diurnal SIF. We can see that weather conditions on 1st August stayed unstable which is also reflected in the SIF values. 
+
+```{r rggbplot}
+rggbplot <- function(inRGBRst,npix=NA,scale = 'lin'){
+ 
+  rgblinstretch <- function(rgbDf){
+    maxList <- apply(rgbDf,2,max)
+    minList <- apply(rgbDf,2,min)
+    temp<-rgbDf
+    for(i in c(1:3)){
+      temp[,i] <- (temp[,i]-minList[i])/(maxList[i]-minList[i])
+    }
+    return(temp)
+  }
+ 
+  rgbeqstretch<-function(rgbDf){
+ 
+    temp<-rgbDf
+    for(i in c(1:3)){
+      unique <- na.omit(temp[,i])
+      if (length(unique>0)){
+        ecdf<-ecdf(unique)
+        temp[,i] <- apply(temp[,i,drop=FALSE],2,FUN=function(x) ecdf(x))
+      }
+    }
+    return(temp)
+  }
+ 
+  if(is.na(npix)){
+    if(raster::ncell(inRGBRst)>5000){
+      npix <- 5000
+    }
+    else{
+      npix <- raster::ncell(inRGBRst)
+    }
+  }
+  x <- raster::sampleRegular(inRGBRst, size=npix, asRaster = TRUE)
+  dat <- as.data.frame(x, xy=TRUE)
+  colnames(dat)[3:5]<-c('r','g','b')
+ 
+  if(scale=='lin'){
+    dat[,3:5]<- rgblinstretch(dat[,3:5])
+  } else if(scale=='stretch'){
+    dat[,3:5]<- rgbeqstretch(dat[,3:5])
+  }
+ 
+  p <- ggplot()+ geom_tile(data=dat, aes(x=x, y=y, fill=rgb(r,g,b))) + scale_fill_identity()
+ 
+}
+```
+
+
+
+The heat wave caused a significant drying out of leaf biomass and consequent decrease in LAI. this also led to more prominent differences in emmited SIF between different location. In other words there is a higher contrast in canopy structural conditions along the fields.  
+
+```{r}
+kable(mobile.sum <- mobile %>% 
+        mutate(loc1 = ifelse(doy.dayfract < 214.4, paste(loc, 1), paste(loc,2)), field = substr(loc,1,3)) %>% 
+        filter(lu == "sugar.beet") %>%
+        group_by(loc1) %>% summarise(n.obs = n(),
+                                        field = unique(field),
+                                        unique.loc = unique(loc),
+                                        lai = mean(cmt),
+                                        `datetime [UTC]` = mean(`datetime [UTC]`) + 86400 , 
+                                        doy.dayfract = mean(doy.dayfract),
+                                        SIF_A_ifld = mean(`SIF_A_ifld [mW m-2nm-1sr-1]`), 
+                                        SIF_B_ifld = mean(`SIF_B_ifld [mW m-2nm-1sr-1]`),
+                                        SIF_A_ifld_sd = sd(`SIF_A_ifld [mW m-2nm-1sr-1]`), 
+                                        SIF_B_ifld_sd = sd(`SIF_B_ifld [mW m-2nm-1sr-1]`),
+                                        SIF_A_ifld.yield = mean(`SIF_A_ifld.yield [a./u.]`),
+                                        SIF_B_ifld.yield = mean(`SIF_A_ifld.yield [a./u.]`),
+                                        SIF_A_ifld.yield.sd = sd(`SIF_A_ifld.yield [a./u.]`),
+                                        SIF_B_ifld.yield.sd = sd(`SIF_B_ifld.yield [a./u.]`),
+                                        magvar = mean(magvar),
+                                        geoidheigh = mean(geoidheigh)) %>% 
+          filter(field == "SB5", unique.loc != "SB5.2") 
+      )
+   mobile.sum$unique.loc <- paste(mobile.sum$unique.loc, c("LAI = 0.6", "LAI = 0.6", 
+                                                           "LAI = 0.7", "LAI = 0.7", 
+                                                           "LAI = 2.5", "LAI = 2.5",
+                                                           "LAI = 3.6", "LAI = 3.6",
+                                                           "LAI = 2.8", "LAI = 2.8", 
+                                                           "LAI = 2.8", "LAI = 2.8" 
+                                                           ))
+   mobile.sum <- mobile.sum %>% mutate(sem = SIF_A_ifld_sd/sqrt(n.obs))
+   
+```
+
+```{r sb, message=FALSE, warning=FALSE, echo=FALSE,fig.height=6, fig.cap = "Locations in sugar beet field measured using mobile procedure. Size of circles and values corresponds to leaf are index. Density of colour inside circles reflects the ammount of *time/LAI corrected* SIF. Basemap shows SIF from 26.06.2018 at 10:46 local time."}
+ggplot() +
+  geom_tile(data = icos.sb, aes(x=x, y=y, fill = SIF760..iFLD)) +    
+  scale_fill_viridis_c()+
+  coord_equal() + theme_bw() + scale_color_distiller(palette = "Greens", direction = 1) +
+  geom_point(data = sb.st, aes(magvar, geoidheigh, size = lai.suns, color = nrSIF_A_ifld)) +
+  labs(x = "Easting (m)", y = "Northing (m)") + geom_text(data=sb.st, aes(x = magvar, y = geoidheigh,label=lai.suns),hjust=0, vjust=0) +
+  theme(legend.position="bottom")
+```
+
+
+```{r sb-map3,fig.asp=1, fig.height=6, fig.cap=" False colour composite showing locations measured pre- and afternoon in sugar beet"}
+#raster 
+library(raster)
+icc <- raster::stack("icos_color_composites")
+selras.trcol <- icc[[3:1]]
+selras.facol <- icc[[4:2]]
+# if needed rename
+# names(selras) <- substr(names(selras), 13, 24)
+# cut to sugar beet extend
+win2 <-
+  raster::extent(320600.6, 320900.0, 5637550, 5637800) # the sugar beet field
+icos.ras <- raster::crop(selras.facol, win2)
+icos.sb <- as.data.frame(as(icos.ras, "SpatialPixelsDataFrame"))
+
+# plot
+map3 <- rggbplot(icos.ras, npix = 5000000) 
+map4 <- rggbplot(raster::crop(selras.trcol, win2), npix = 5000000)
+
+map3 + 
+  geom_point(data = mobile.sum, 
+             aes(magvar, geoidheigh, shape=unique.loc, fill = "black", size = 1.5, stroke =2)) +
+  scale_shape_manual(values=c(0:5)) + 
+  labs(x = "Easting (m)", y = "Northing (m)", title= "Transect in sugar beet", subtitle = "Basemap: False colour composite (02.8.2018)") +
+  theme(legend.position="bottom", ) +
+  scale_y_continuous(breaks = 
+                       seq(extent(icos.sb)@ymin,extent(icos.sb)@ymax,by=100)) +
+  scale_x_continuous(breaks = 
+                       seq(extent(icos.sb)@xmin + 48.5, extent(icos.sb)@xmax, by=100)) +
+  coord_equal() + 
+  theme_bw(base_size = 20) +
+  theme(legend.position = "none", axis.text.y = element_text(angle = 90, hjust = 0.5))
+
+```
+
+```{r sb-map4, fig.asp=1, fig.height=6, fig.cap=" True colour composite showing locations measured pre- and afternoon in sugar beet"}
+map4 + 
+  geom_point(data = mobile.sum, 
+             aes(magvar, geoidheigh, shape=unique.loc, fill = "black", size = 2, stroke =2)) +
+  scale_shape_manual(values=c(0:5)) + 
+  labs(x = "Easting (m)", y = "Northing (m)", title= "Transect in sugar beet", subtitle = "Basemap: True colour composite (2.8.2018)") +
+  theme(legend.position="bottom", ) +
+  scale_y_continuous(breaks = 
+                       seq(extent(icos.sb)@ymin,extent(icos.sb)@ymax,by=100)) +
+  scale_x_continuous(breaks = 
+                       seq(extent(icos.sb)@xmin + 48.5, extent(icos.sb)@xmax, by=100)) +
+  coord_equal() + 
+  theme_bw(base_size = 20) +
+  theme(legend.position = "none", axis.text.y = element_text(angle = 90, hjust = 0.5))
+```
+
+
+
+```{r sb-map, fig.height = 9, fig.asp=1, fig.cap=" Map showing locations measured pre- and afternoon in sugar beet"}
+#raster 
+require(raster)
+# if needed rename
+# names(selras) <- substr(names(selras), 13, 24)
+# cut to sugar beet extend
+win2 <-
+  extent(320600.6, 320900.0, 5637450, 5637800) # the sugar beet field
+icos.ras <- crop(selras, win2)
+icos.sb <- as.data.frame(as(icos.ras, "SpatialPixelsDataFrame"))
+
+# plot
+map1 <- ggplot() +
+  geom_tile(data = icos.sb, aes(x=x, y=y, fill = SIF760..iFLD)) +    
+  scale_fill_viridis_c() +
+  coord_equal() +
+  geom_point(data = mobile.sum, 
+             aes(magvar, geoidheigh, shape=unique.loc), stroke =2) + 
+  scale_shape_manual(values=c(0:5), guide = F) + 
+  labs(x = element_blank(), y = element_blank(), title= "Transect in sugar beet", subtitle = "Basemap: HyPlant F760 on 2.8.2018") +
+  scale_y_continuous(breaks = 
+                       seq(extent(icos.sb)@ymin,extent(icos.sb)@ymax,by=100)) +
+  coord_equal() + 
+  theme_bw(base_size = 20) + 
+  theme(axis.text.y = element_text(angle = 90, hjust = 0.5), legend.position = c(0.70,.11), legend.direction = "horizontal", legend.text = element_text(size = 12), legend.title = element_text(size = 15)) +
+  guides(fill = guide_colorbar(title = expression("F 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]"), 
+                               title.position = "top", barheight = 0.5, barwidth = 15))
+map1
+```
+
+
+```{r}
+mobile.sb5 <- mobile.sum %>% filter(field == "SB5", unique.loc != "SB5.2") %>% mutate(transect = as.numeric(substr(loc1,7,8)))
+mobile.sb5.1 <- mobile.sb5 %>% filter(transect == 1)
+mobile.sb5.2 <- mobile.sb5 %>% filter(transect == 2)
+df <- tibble(x1 = mobile.sb5.1$`datetime [UTC]`, x2= mobile.sb5.2$`datetime [UTC]`, y1 = mobile.sb5.1$SIF_A_ifld, y2 = mobile.sb5.2$SIF_A_ifld)
+text <- tibble(x = mobile.sb5.2$`datetime [UTC]`, y=mobile.sb5.2$SIF_A_ifld, lai = mobile.sb5.1$lai)
+```
+
+```{r, fig.height=9, fig.asp= 1}
+labs <- data.frame(x = as.POSIXct( c("2018-08-03 10:30:24 UTC", "2018-08-03 13:00:00 UTC")),
+                   y = c(1.4,1.72), 
+                   labs = c("Morning", "Afternoon"))
+fig1 <- fig1 + 
+    geom_point(data = mobile.sum, 
+               aes(x = `datetime [UTC]`, y = SIF_A_ifld,
+                                shape=unique.loc), size = 3, stroke = 2) + 
+    scale_shape_manual(values=seq(0,18)) +
+    theme_bw(base_size = 20) + 
+    theme(legend.position = "none") + 
+    guides(shape = guide_legend(reverse=T)) +
+    geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), data = df) +
+    geom_errorbar(data = mobile.sum,
+                  aes(x = `datetime [UTC]`,y = SIF_A_ifld,  
+                      ymin = SIF_A_ifld - SIF_A_ifld_sd, 
+                      ymax = SIF_A_ifld + SIF_A_ifld_sd), 
+                  width=500) +
+    geom_text(aes(x=x, y=y,label = labs) , data = labs, size =  6,fontface = "bold") + 
+    geom_text(aes(x=x + 500, y=y,label = paste("LAI =", text$lai)), data = text, size = 5, hjust = 0) + 
+    xlim(as.POSIXct("2018-08-03 06:30:00", tz="GMT"),as.POSIXct( "2018-08-03 16:30:00", tz="GMT")) +
+    labs(title = "Reference (line) and mobile (points) SIF measurements", 
+         subtitle = "Morning and afternoon on 02.08.2018", 
+         x = "Universal Time [UTC]",
+         y = expression("F 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]"))
+
+fig1
+```
+
+
+
+```{r}
+cowplot::plot_grid(fig1, map1)
+```
+
+
+
+Bellow we plotted the SIF data from the table agains time for all sugar beet locations. Notice that we have sampled one transect in field 5 twice at that day. Superimposed is the diurnal SIF curve from next day. Weather conditions in both dates were stable and therefore we assume that SIF values are comparable. 
+
+```{r}
+ggplot() +
+  geom_point(data = mobile.sum, aes(x = doy.dayfract%%1, y = SIF_A_ifld,
+                                shape=unique.loc), size = 3) + xlim(0.29, 0.54) +  guides(shape=guide_legend(ncol=2)) +
+  geom_errorbar(data=mobile.sum, aes(x = doy.dayfract%%1, ymin = SIF_A_ifld - SIF_A_ifld_sd, ymax = SIF_A_ifld + SIF_A_ifld_sd), width=.004,
+                position=position_dodge(0.05)) +
+  geom_point(data = diurnal[diurnal$doy.dayfract > 214,], 
+             aes(x = doy.dayfract%%1, y = `SIF_A_ifld [mW m-2nm-1sr-1]`), color="cyan3",  size = 1) + 
+  scale_shape_manual(values=seq(0,18)) + xlab("DOY (CEST)") + geom_smooth(data = diurnal[diurnal$doy.dayfract > 214,], aes(x = doy.dayfract%%1, y = `SIF_A_ifld [mW m-2nm-1sr-1]`)) +
+  theme_bw()
+```
+
+A closer look into the relative change in SIF from pre-noon into after-noon shows that that such change is dependent on the LAI. higher LAI exhibit a greater increase in SIF during the day as those locations where less vegetation is present. In the graphic bellow we concentrate only on both replications of this transect. We see that not only SIF is higher with increase in LAI but also the slope or change in SIF from morning to afternoon is greater at higher LAI values. 
+
+```{r}
+text2 <- tibble(x = mobile.sb5.2$`datetime [UTC]`, y=mobile.sb5.2$SIF_A_ifld)
+
+
+fig3 <- ggplot(data = mobile.sb5, aes(x = `datetime [UTC]`, y = SIF_A_ifld)) +
+  geom_point(data = mobile.sb5, 
+             aes(shape=unique.loc), size = 3) +
+  # geom_point(data = diurnal[diurnal$doy.dayfract > 214,], 
+   #          aes(x = doy.dayfract%%1, y = `SIF_A_ifld [mW m-2nm-1sr-1]`), color="cyan3",  size = 1) +
+  scale_shape_manual(values=seq(0,18))  + 
+  geom_segment(aes(x = x2, y = y1, xend = x2, yend = y2), data = df) +
+    geom_segment(aes(x = x1, y = y1, xend = x2, yend = y1),lty = 2, data = df) + 
+    geom_text(aes(x=text2$x[1] + 750, y=text2$y[1] - 0.05), label = expression( Delta*"F"["SB.1"])) +
+    geom_text(aes(x=text2$x[2] + 750, y=text2$y[2] - 0.065), label = expression( Delta*"F"["SB.3"])) + 
+    geom_text(aes(x=text2$x[3] + 750, y=text2$y[3] - 0.17), label = expression( Delta*"F"["SB.4"])) +
+     geom_text(aes(x=text2$x[4] - 1000, y=text2$y[4] - 0.25), label = expression( Delta*"F"["SB.5"])) +
+    theme_bw() + 
+     ylab(expression("SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) 
+fig3
+```
+
+we can plot this increase against LAI and see that there is a linear dependency between LAI and change in SIF.
+
+
+```{r, include=FALSE}
+
+
+change.df <- tibble(unique.loc = mobile.sb5.1$unique.loc, 
+                    deltaSIF = mobile.sb5.2$SIF_A_ifld-mobile.sb5.1$SIF_A_ifld, 
+                    lai = mobile.sb5.1$lai,
+                    sd = sqrt(mobile.sb5.1$sem^2 + mobile.sb5.2$sem^2))
+
+lm_eqn <- function(df){
+  m <- lm(y ~ x, df);
+  eq <- substitute(y == a + b %.% x*","~~R^2~"="~r2, 
+                   list(a = round(as.numeric(coef(m)[1]), 2), 
+                        b = round(as.numeric(coef(m)[2]), 2), 
+                        r2 = round(summary(m)$r.squared, 2)
+                        )
+                   )
+  as.character(as.expression(eq));                 
+}
+tmp <- data.frame(y = change.df$deltaSIF, x = change.df$lai)
+```
+
+```{r, fig.asp=1, fig.height=9}
+
+fig4 <- ggplot(change.df, aes(lai, deltaSIF)) + 
+    geom_point(aes(shape = unique.loc), size = 3, stroke = 2) + 
+    
+    geom_smooth(method = "lm") +
+    geom_errorbar(aes(ymin = deltaSIF - sd, ymax = deltaSIF + sd)) +
+    scale_shape_manual(values=c(0:5)) +
+    labs(title = "Morning/Afternoon Difference vs. LAI") +
+    ylim(0,0.55) + xlim(0,4) +
+    ylab(expression( Delta*"F ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+    xlab(expression("LAI ["~m^{2}%.%m^{-2}~"]")) +
+    theme_bw(base_size = 20) +
+    geom_text(aes(x=3, y=.1, family = "mono"), label = lm_eqn(tmp), parse = TRUE, size = 5) + 
+    theme(legend.position = "none") +
+    scale_y_continuous(breaks = seq(0,0.5, by=0.1)) 
+summary(with(change.df, lm(deltaSIF ~ lai)))
+fig4
+```
+
+
+
+```{r}
+diurnal.215 <- diurnal %>% filter(doy.dayfract > 215)
+p1 <- ggplot(diurnal.215, aes(doy.dayfract%%1,`Incoming at 750nm [W m-2nm-1sr-1]`)) + theme_bw() + geom_point()
+p1
+```
+
+```{r}
+fit <- with(diurnal[diurnal$doy.dayfract > 215,], lm(`Incoming at 750nm [W m-2nm-1sr-1]` ~ poly(doy.dayfract,2,raw=TRUE)))
+f <- function(x,c) coef(fit)[1] + coef(fit)[2]*x + coef(fit)[3]*x^2
+diurnal.215$`Smooth Incoming at 750nm [W m-2nm-1sr-1]` <- f(x <- diurnal.215$doy.dayfract)
+p1 + geom_line(aes(y=diurnal.215$`Smooth Incoming at 750nm [W m-2nm-1sr-1]`), colour="red")
+```
+```{r}
+ggplot() + geom_line(data=diurnal.215, aes(x = doy.dayfract%%1, y=`Smooth Incoming at 750nm [W m-2nm-1sr-1]`), colour="red") + 
+  geom_point(data = mobile.sb5, aes(x = doy.dayfract%%1, y = SIF_A_ifld/10,
+                                shape=unique.loc), size = 3) + xlim(0.29, 0.54) +  guides(shape=guide_legend(ncol=1)) +
+  geom_errorbar(data=mobile.sb5, aes(x = doy.dayfract%%1, ymin = SIF_A_ifld/10 - SIF_A_ifld_sd/10, ymax = SIF_A_ifld/10 + SIF_A_ifld_sd/10), width=.004,
+                position=position_dodge(0.05)) + scale_shape_manual(values=c(0:5))+ theme_bw() + scale_y_continuous(sec.axis = sec_axis(~.*10, name = "SIF_A_ifld [mW m-2nm-1sr-1]"))
+```
+
+```{r, fig.cap="SIF yield for observations in sugar beet field taken on 2nd August "}
+df <- tibble(x1 = mobile.sb5.1$doy.dayfract, x2= mobile.sb5.2$doy.dayfract, y1 = mobile.sb5.1$SIF_A_ifld.yield, y2 = mobile.sb5.2$SIF_A_ifld.yield)
+text <- tibble(x = 0.53, y=mobile.sb5.2$SIF_A_ifld.yield, lai = mobile.sb5.1$lai)
+
+ggplot() + 
+  geom_point(data = mobile.sb5, aes(x = doy.dayfract%%1, y = SIF_A_ifld.yield,
+                                shape=unique.loc), size = 3) + xlim(0.29, 0.54) +  guides(shape=guide_legend(ncol=1)) +
+  geom_errorbar(data=mobile.sb5, aes(x = doy.dayfract%%1, ymin = SIF_A_ifld.yield - SIF_A_ifld.yield.sd, ymax = SIF_A_ifld.yield + SIF_A_ifld.yield.sd), width=.004,
+                position=position_dodge(0.05)) + scale_shape_manual(values=c(0:5))+ theme_bw() + ylab("SIF_A_ifld yield [a./u.]") +
+  geom_segment(aes(x = x1%%1, y = y1, xend = x2%%1, yend = y2), data = df) +
+  geom_text(aes(x=x, y = y+0.01, label = paste("LAI =", lai) ), data = text) 
+```
+
+```{r}
+ggplot(data = mobile.sum, aes(x=lai, y=SIF_A_ifld.yield, shape = unique.loc) )  + geom_abline(slope = 1.40107, intercept = 0.65704) +
+  geom_point( size = 3) + scale_shape_manual(values=c(0:16)) + theme_bw() + guides(shape=guide_legend(ncol=2))  
+summary(with(mobile.sum, lm(SIF_A_ifld.yield ~ lai)))
+```
+
+```{r}
+
+p1 <- ggplot(diurnal.215, aes(doy.dayfract,`SIF_A_ifld [mW m-2nm-1sr-1]`)) + theme_bw() + geom_point()
+p1
+```
+
+```{r}
+fit <- with(diurnal[diurnal$doy.dayfract > 215,], lm(`SIF_A_ifld [mW m-2nm-1sr-1]` ~ poly(doy.dayfract,2,raw=TRUE)))
+f <- function(x,c) coef(fit)[1] + coef(fit)[2]*x + coef(fit)[3]*x^2
+diurnal.215$sif.mod <- f(x <- diurnal.215$doy.dayfract)
+diurnal.215$Date <- diurnal.215$`datetime [UTC]`
+p1 + geom_point(aes(y=diurnal.215$sif.mod), colour="red")
+```
+```{r}
+ggplot() + geom_line(data=diurnal.215, aes(x = doy.dayfract%%1, y=sif.mod), colour="red") + 
+  geom_point(data = mobile.sb5, aes(x = doy.dayfract%%1, y = SIF_A_ifld,
+                                shape=unique.loc), size = 3) + xlim(0.29, 0.54) +  guides(shape=guide_legend(ncol=1)) +
+  geom_errorbar(data=mobile.sb5, aes(x = doy.dayfract%%1, ymin = SIF_A_ifld - SIF_A_ifld_sd, ymax = SIF_A_ifld + SIF_A_ifld_sd), width=.004,
+                position=position_dodge(0.05)) + scale_shape_manual(values=c(0:5))+ theme_bw() + ylab("SIF_A_ifld [mW m-2nm-1sr-1]")
+```
+
+
+## Deriving SIF at time of HyPlant overflight
+
+Recalculation SIF for any location for any time of the day is possible if there is: 
+
+* at least one SIF measurement at the location of interest - F observation ($F_{o}$) 
+
+* a diurnal SIF curve - F diurnal ($F_{d}$)
+
+* LAI for both location of interest and for location of diurnal measurement ($LAI_{o}$ and $LAI_{d}$)
+
+Then SIF at observation location for any time $x$ is found through: 
+
+\begin{equation} \label{eq:1}
+F_{ox} = F_{oo} + \frac{LAI_o}{LAI_d}.(F_{dx} - F_{do})
+\end{equation}
+
+In equation (1) first suffix is reserved for the location (o - observation (mobile) location, d- diurnal location) and second suffix - for time. In other word, SIF at mobile location $o$ at time $x$ $F_{ox}$ equals the SIF at observation location at observation time $F_{oo}$ corrected by the product of change in diurnal SIF between observation time and time $x$ -  $(F_{dx} - F_{do})$,  and the ratio of LAI for both location -  $\frac{LAI_o}{LAI_d}$

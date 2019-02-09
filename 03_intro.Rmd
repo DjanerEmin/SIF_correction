@@ -1,0 +1,57 @@
+---
+title: "Method For Acquiring and Comparing Spatially Explicit Measurements of Sun-induced Flourescence on the Ground"
+subtitle: 'Introduction: why is corection of spatiotemporal SIF measurements important?'
+output: 
+    html_document:
+        toc: true
+        toc_depth: 4
+        toc_float:
+          collapsed: false
+bibliography: mybibfile.bib
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+
+*** 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Advances in remote estimation of Sun-induced fluorescence  
+
+Sun-induced fluorescence (SIF) is emitted directly from the photosynthetic machinery of plants and, thus, provides a direct link to plant functioning [@Porcar-Castell2014]. In fact, SIF from plants is already viewed among the broader scientific community as a valuable new source of information about plant functional status. Among other applications, SIF could be used to improve global vegetation modeling [@Wieneke2016], could help predict crop yield [cite], or could be used as early stress indicator [@Rossini2015]. Consequently, efforts to design devices to measure SIF across the different spatiotemporal scales have surged. 
+
+There are variety of instrumental designs optimized for SIF retrieval. High-resolution point at the leaf and canopy levels (proximal scale)  [@Kebabian1999; @GomezChova2006; @Fournier2012; @Burkart2015], airborne imaging spectrometers for larger areal coverage (regional scale) [@Rascher2015]. On the other hand, rapid improvements in lightweight spectroscopy mean that soon also UAV based technology could reach an operational stage, covering an intermediate (local) scale between the abovementioned proximal and regional. Furthermre, data from spaceborne hyperspectral sensors (satellite imagery) have been utilized to retrieve global estimates of SIF over the Earth's surface (global scale)[cite]. In the near future, the hyperspectral sensor (FLORIS) on board of the upcoming ESA Fluorescence Explorer (FLEX) satellite mission will increase the regularity of global estimates of SIF. In this context of ever-improving capabilities for SIF retrieval across spatiotemporal scales, collecting spatially distributed validation data on the ground becomes very important.  
+
+A major step forward in delivering robust SIF validation data are the efforts to establish a common measurement protocol and a create a global network of measurement stations supported through COST actions EUROSPEC and OPTIMISE. As a result, a variety of instrumental systems were developed by several research groups and comparative studies conducted. Such proximal sensing devices, when installed on a permanent position,  have helped to understand the diurnal and seasonal behavior of SIF above the canopy. For example, a midday depression in SIF has been observed in stressed plants. In parallel, experimental [cite] and simulation data [cite] have pointed out a strong influence of canopy structure on the Top-of-Canopy (TOC) SIF. Currently, accounting for all factors (external, structural, and functional) affecting the ammount of total canopy integrated fluorescence signal is the main challenge hindering accurate scaling up and interpretation of the small SIF signal from leaf to the canopy, and ultimately, to the airborne or spaceborne sensor.
+
+### Influencing factors affecting Sun-induced fluorescence
+
+Considering the influence only of external factors, the diurnal cycle in SIF is strongly related to the ammount of incomming radiation. This fact complicates comparison between measurements taken in different locations unless measurements are taken simultaneously. To circumvent such problem, very often, diurnal SIF measurements are normalized by the amount of incoming photosynthetically active radiation (PAR) [cite]. Alongside accounting for the diurnal cycle, such an approach has the additional benefit of providing a proxy estimate for photosynthetic efficiency - a SIF yield, if certain assumptions are made []. However, 
+
+### Knowledge Gap
+
+A drawback of the yield approach is the use of a wide variety of normalization proxies to estimated SIF-yield [cite]. The fact that different proxies for PAR are being used hinders standardization and comparability between studies. Furthermore, the resulting SIF yield estimates are usually in different physical units than the original directional spectral intensity [W.m$^2$.sr$^-1$.nm$^-1$] in which SIF is measured. For the objectives of a single study working with arbitrary units might be acceptable, however, for validation of remote sensing products it is important to keep the physical units of the measurements. 
+
+There is a need for a measurement methodology (approach) which:  
+
+1. enables mobile SIF measurements from different locations (spatially explicit), 
+2. ensures robust correction of the daily cycle - recalculates SIF to a specific time of the day, and 
+3. keeps the standard physical units used in remote sensing of SIF. 
+
+### Approach 
+
+Here we propose a measurement protocol which addresses the abovementioned concerns and satisfies the three criteria outlined. It involves two identical and intercalibrated hyperspectral devices FLOX []. One is used as a stationary reference device to track the diurnal SIF at a single location, while the second, equipped with a backpack, is used to measure in different locations along predefined transects. The recalculation protocol uses the daily curve of SIF from the reference device to calculate the rate of SIF change. In essense it corrects for changes in SIF attributed to increased irradiance by a scalare infered from the diurnal curve. because the rates of change in SIF throughout the day are dependent on structural/functional factors, the difference in LAI between reference and mobile location is also taken into account. 
+
+In summary, the recalculation procedure uses the change rate from a reference device adjusted by the LAI ratio between reference and target location to estimate the most probable SIF at any given time of the day. This measurement protocol can be used to study the spatial heterogeneity of SIF in small areas, to measure a large number of plots in field phenotyping set-ups, or for recalculation of SIF in physical units for any given time of the day, e.g. for validation of airborne data. 
+
+This web resource presents the derivation of the equation based on dedicated experiement as well as first test case measurement performed using this approach. 
+
+### Literature
+
+

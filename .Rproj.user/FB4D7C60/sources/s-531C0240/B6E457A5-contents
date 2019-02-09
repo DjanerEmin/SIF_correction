@@ -1,0 +1,62 @@
+---
+title: "Method For Acquiring and Comparing Spatially Explicit Measurements of Sun-induced Flourescence on the Ground"
+author: "Dzhaner Sami Emin, Maria Matveeva, Benedict Vierneisel, Bastian Siegmann, Andreas Burkart, Tommaso Julita, and Uwe Rascher"
+output: 
+    html_document:
+        toc: true
+        toc_float: 
+          collapsed: false
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+![](visuals/logos.png)
+
+***
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, fig.width = 9)
+```
+
+### What is the purpose of this web-page?
+
+This is an online resource providing additional information related to my research. The main outcomes in this page were summarized in a poster 
+entitled "Method For Acquiring and Comparing Spatially Explicit Measurements of Sun-induced Flourescence on the Ground". The poster was presented at [EARSEL 2019 Workshop in Brno](http://is.earsel.org/workshop/11-IS-Brno2019/), and will also be presented at the [FLEX 2019 conference in Davos](https://www.fluorescence2019.org/QuickEventWebsitePortal/flex-2019/esa). 
+
+![](visuals/Poster_A0_final.png)
+
+However, posters and scientific papers, because of their size limitations, constrict clear and detailed reporting on the entire research process. In the age of rich data and methodologies availability, a single research can be very complex. Consequently, the lack of a clear reporting on the many computational steps along the way hinders repeatability of research - an issue discussed [here](https://www.theatlantic.com/science/archive/2018/04/the-scientific-paper-is-obsolete/556676/). One possible solution to improve reproducibility of research is to include an online resource which provides detailed description of data and computational procedures. Notebooks such as Jupiter and Rmarkdown further help structuring text, graphics, and source code. 
+
+### Structure
+
+This web-resource is organised pretty much just like a standard paper. 
+
+1. [Metadata](02_meta.html)
+2. [Introduction](03_intro.html)
+3. [Methods](04_method.html)
+4. [Results](05_result.html)
+5. [Case study](06_case.html)
+6. [Discussion & Outlook](07_discussion)
+
+Metadata tab describes the data which was used in this experiment, the preprocessing steps, and the storage format. The data in its final form is available upon request. 
+
+Introduction tab outlines the state of current research in this field, and defines the research questions 
+
+Method tab describes the experimental design, the instrumental setup, and the study site
+
+Results section comprises the biggest difference than a standard issue paper. It takes an in-depth analysis of the data set and a provides detailed outline of the analytical steps. It includes many graphs and analytical sections which could not be included in the final version of either the poster or the paper. In addition 
+it includes the R-scripts used to produce the results.
+
+
+Case study tab describes a specific application of the developed correction method. 
+
+
+### Who is who? Contacts
+
+Corresponding Author: 
+Mr. Dzhaner Sami Emin
+e-mail: d.emin@fz-juelich.de
+

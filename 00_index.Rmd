@@ -1,0 +1,8 @@
+---
+title: "00_index"
+author: "D. Emin"
+date: "February 9, 2019"
+output: html_document
+---
+
+![](visuals/Poster_A0_final.png)

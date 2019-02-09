@@ -1,0 +1,17 @@
+name: "Spatial analysis of HyPlant data"
+navbar:
+    left: 
+      - text: "Home"
+        href: 01_home.html
+      - text: "Metadata"
+        href: 02_meta.html
+      - text: "Introduction"
+        href: 03_intro.html
+      - text: "Methods"
+        href: 04_method.html
+      - text: "Results"
+        href: 05_result.html
+      - text: "Case Study: AtmoFLEX"
+        href: 06_case.html
+      - text: "Discussion & Outlook"
+        href: 07_discussion.html

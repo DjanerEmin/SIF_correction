@@ -1,0 +1,18 @@
+---
+title: "case study"
+author: "D. Emin"
+date: "February 1, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Two agricultural fields were chosen for this evaluation test - a sugar beet (*Beta vulgaris* L.) field with significant heterogeneity in soil properties, and a winter wheat (*Triticum aestivum* L.) field with relatively homogeneous soil (\@ref(fig:study-area) (b)). Eddy covariance and meteorological towers are installed in both fields as part of the ongoing monitoring of agroecosystem dynamics. Measurements were performed in July under clear sky conditions. Winter wheat plants were in seed development stage (BBCH = ), sugar beet  
+
+
+```{r study-area,  fig.cap= "Study area - overview land use map (a), two selected fields (b). *Basemap source: Open Street Map; Coordinate reference system: EPSG:32632, Datum:WGS 84, Projection:UTM Zone 32N*", fig.height=6}
+knitr::include_graphics("visuals/papermap61.png", dpi = 500)
+```

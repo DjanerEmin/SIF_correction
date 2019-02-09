@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script src="lib/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="lib/bootstrap-3.3.5/css/simplex.min.css" rel="stylesheet" />
+<script src="lib/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="lib/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="lib/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="lib/kePrint-0.0.1/kePrint.js"></script>
+
+</head>
+<body style="background-color:white;">
+<table>
+<caption>Metatable of FLOX variables with units and description</caption>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> Variable </th>
+   <th style="text-align:left;"> Units </th>
+   <th style="text-align:left;"> Description </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> doy.dayfract </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Local time and date in decimal format, e.g 179 is the 00.00 o'clock on 179th day of the calendar year, noon is 179.5 and so on. </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> datetime [UTC] </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [date] </td>
+   <td style="text-align:left;"> UTC Time downloaded from GPS </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> SZA </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [degrees] </td>
+   <td style="text-align:left;"> Sun Zenith Angle, calculated from UTC time </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> Lat </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [degrees] </td>
+   <td style="text-align:left;"> Latitude downloaded from GPS </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> Lon </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [degrees] </td>
+   <td style="text-align:left;"> Longituted downloaded from GPS </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> Incoming at 750nm </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [W m-2nm-1sr-1] </td>
+   <td style="text-align:left;"> Incommin radiation at 750 nm </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> Reflected 760 </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [W m-2nm-1sr-1] </td>
+   <td style="text-align:left;"> Reflected radiation at 760 nm </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> Reflected 687 </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [W m-2nm-1sr-1] </td>
+   <td style="text-align:left;"> Reflected radiation at 687 nm </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> Reflectance 750 </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Reflectance (unitless) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> Reflectance 760 </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Reflectance (unitless) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> temp1 </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [C] </td>
+   <td style="text-align:left;"> Temperature readings inside box, for more info contact JB </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> temp2 </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [C] </td>
+   <td style="text-align:left;"> Temperature readings inside box, for more info contact JB </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> temp3 </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [C] </td>
+   <td style="text-align:left;"> Temperature readings inside box, for more info contact JB </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> temp4 </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [C] </td>
+   <td style="text-align:left;"> Temperature readings inside box, for more info contact JB </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> h1 </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [%] </td>
+   <td style="text-align:left;"> Relative Humidity </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> h2 </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [%] </td>
+   <td style="text-align:left;"> Relative Humidity </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> E_stability </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [%] </td>
+   <td style="text-align:left;"> Percentage difference between first and last PAR readings for measurement cycle from QE Pro. Shows how dynamic Ilumination conditions during measurement are </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> sat value L </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Saturation value for reflected radiation from QE Pro </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> sat value E </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Saturation value for incoming  radiation at begining of measurement cycle from QE Pro </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> sat value E2 </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Saturation value for incoming  radiation at end of measurement cycle from QE Pro </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> SIF_A_ifld </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [mW m-2nm-1sr-1] </td>
+   <td style="text-align:left;"> Sun induced fluorescence values for  760 nm retrieved by iFLD </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> SIF_B_ifld </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [mW m-2nm-1sr-1] </td>
+   <td style="text-align:left;"> Sun induced fluorescence values for 687 nm retrieved by iFLD </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> SIF_A_sfm </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [mW m-2nm-1sr-1] </td>
+   <td style="text-align:left;"> Sun induced fluorescence values for 760 nm retrieved by Spectral Fitting Method (Cogliatti 2015) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> SIF_B_sfm </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [mW m-2nm-1sr-1] </td>
+   <td style="text-align:left;"> Sun induced fluorescence values for 687nm retrieved by Spectral Fitting Method (Cogliatti 2015) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> A_sfm_conv </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Convolution coeficient for SFM </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> B_sfm_conv </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Convolution coeficient for SFM </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> NDVI </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Vegetation index related to overall greennes , higher values normally mean more greeen biomass (but it saturates at higher levels of biomass) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> PRI </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Photochemical reflectance index </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> MTCI </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> MERIS terrestrial chlorophyll index </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> SR </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Simple ratio </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> EVI </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Enhanced vegetation index </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> REP </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Red edge inflexion point </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> TCARI </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Transformed chlorophyll absorption reflectance index </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> REDCl </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Red edge crust index </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> mCRI </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Modified carotenoid reflectance index </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> EPAR </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Inclomming PAR </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> LPAR </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Reflected PAR </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> E_stability full </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [%] </td>
+   <td style="text-align:left;"> Percentage difference between first and last PAR readings for measurement cycle from FLAME. Shows how dynamic Ilumination conditions during measurement are </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> sat value L full </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Saturation value for reflected radiation from FLAME </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> sat value E full </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Saturation value for incoming  radiation at begining of measurement cycle from FLAME </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> sat value E2 full </td>
+   <td style="text-align:left;width: 4cm; font-weight: bold;"> [unitless] </td>
+   <td style="text-align:left;"> Saturation value for incoming  radiation at end of measurement cycle from FLAME </td>
+  </tr>
+</tbody>
+</table>
+</body>
+</html>

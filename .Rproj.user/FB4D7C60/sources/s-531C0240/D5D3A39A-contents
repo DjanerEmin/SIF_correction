@@ -1,0 +1,150 @@
+---
+title: "EARSEL Summary Report"
+author: "D. Emin"
+date: "February 9, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+![](D:/Poster_earsel/Earsel_logo.png)
+
+
+### Summary 
+
+The [EARSEL](http://is.earsel.org/workshop/11-IS-Brno2019/) Imaging spectroscopy workshop took place in Brno between 6 and 8 February 2019. More than 150 participants were present during the three days, over 45 posters were displayed, and more than 100 talks given on topics ranging from development, usage, and cal/val of satellite hyperspectral data, sun-induced fluorescence, vegetation and soil spectroscopy, UAV spectroscopy, as well as tools for spectroscopic data analysis. The workshop was held at the Masaryk University Campus Bohunice.     
+
+**Tutorials**
+
+The workshop was preceded by a day of ARTMO and EnMA-box tutorial sessions, each taking around 4 hours. The ARTMo tutorial first gave an overview of the capabilities of the software, showcased the newly implemented feautures, and practiced the basic simulation workflow. In the latter part of the workshop, the capabilities of the Machine Learning Regression Algorythms Toolbox were practiced. The MLRA highly reduces the computational time and enables the user to select from variety of machine learning algorythms to learn and predict the variables of interest. 
+
+The EnMAP-box tutorial focused on showcasing the software which is scheduled to be launched as an plug-in for QGIS in March 2019. The software tries (and in many cases succeeds) to provide the ENVI capabilities for analysis of hyperspectral RS data. Furthormore it taps into the machine learning capabilities developed in python and provides a suite for image classification using a wide range of machine learning algorythms. Finally, the most exciting feature of the EnMAP-box is the possibility to add custom algorythms and toolboxes and develop automated processing chains for your analysis. 
+
+**Keynotes**
+
+The keynotes on the First day of EARSEL workshop was focused on operational and future remote sensing platforms for hyperspectral image acquisitions. Most of the talks had a descriptivie character and  were akin to reading a wikipedia page on the topic.  Later in the specialised session on hyperspectral sensing of vegetation, more focus was put on understaning the physiology of plants through imaging and point spectrometers. The talk from Shary was on NPQ temporal dynamics as seen through the PRI reflectance range. 
+
+Zbynek talked about the difference between empirical and modeling approaches in spectroscopy and fluorescence research. In the empirical section he showed a study combining QEPro and LIFT on avocado. He stressed the importance the leaf PAR has and that leaf PAR is different than global PAR. How to measure or estimate leaf PAR could be red in Wyber et al. 2017 
+
+The most of his presentation was focused on showcasing the possibilities of RT models, 2D and 3D to simulate and study the effects of plant biochemistry and structure on the hyperspectral signal. At the leaf level he showd the FLuspect B model based on Prospect and developed by Vilfain for leaf level Fluorescence modeling. It outputs contains 4 SIF outputs - reflectance and transmittance of F for two PS , leaf single scattering, albedo , Qe, Cx, photochemical rreflectance PAR related to vio/zea. Idea is that PRI can be directly retrieved via Cx parameter and skip the standard pri estimated. At the canopy scale he showed research by liu et.al on downscaling sif using random forest 
+
+**SIF session**
+
+The SIF session had at least twice as lower attendace rate as the parallel tools session. The talks in the SIF session were rather general, with the exception of the talk of the girl from Wageningen. Vera presented the SIF maps and received no questions (check if this is true), bastians talk was full with hopes and prayers. Alexander Damm presented a digital infrastructure for storage and dissimination of hyperspactral data (FLUOSPECCHIO database ). It is based on MySQL with a server build on top and interface for analytical procedures. It is still under development and will likely be online first in 2020. It is being developed as part of the development of a worldwide network of ground SIF stations to support the validation of FLEX in the future. Damm also stressed the importance of standardization and regular cross-calibration of all hyperspectral systems.
+
+The talk from Wageningen presented the preliminary results from a field sampling effort over sugar beet during the same time period as my experimental setup in Selhausen end of June 2018. relationship to LAI was shown (although with strange values), also the relationship was improved after including Cab as combined variable. There is a potential for exchange of data and ideas, possibly even application of my methodology for correction of time difference on their dataset. 
+
+**Posters**
+
+From the Posters there were two posters related to SIF from Anshu based on HyPlant data from 2015, good validation with ground SIF for which he does not have any knowledge on the exact methodology of ground data collection. Correlation with VI similar to what we see from Maria and Vera. The second poster was focused on a fuzzy approach to link VI and SIF. Fuzzy logic applied to VI to predict or be used as a substitute for SIF. 
+
+***
+### Further notes (unedited): 
+
+#### prof. Michael Rast (ESA)
+- next generation of Sentinels ( development underway) 
+- one of the sensors is 
+
+CHIME hyperspectral imaging mission 
+- ssd 20 -30  (costly to go down ) 
+- spectral range 400 - 2500 
+- ss orbit LTDN 10.30 - 11.3
+- nadir view - land surface inland and coasteal waters,
+
+- MSI and SLSTR covering the SWIR but more spectral resolution is wanted 
+
+- tno vito amos ohb (Munich) deimos - consortium developing the sensor
+
+- EnMap = Prisma (italy) concepts similar to CHIME
+- noise equivalent radiance NeDL the lower the better
+
+***
+#### Luis Guanter (GFZ Potsdam)
+
+- Hyperion - NASA demonstration  2000 - 2017
+- Chris - PROBA 2001 - now , VNIR 412 - 1050 (62 bands), samples same spot on earth from different angles  - multiangluar spectroscopic dataset
+- HICO (on board of ISS) 2009 - 2014 , optimised for coastal regions, high spectral res, 90m, 380-96 nm 
+- DESIS 2018-2023 (DLR-Teledyne US) , vnir: 420 - 1000 , 3,5 nm res, 30m spatial resolution, comercial - but free for scientific use upon request
+- Gaofen-5 (China) 2018 (andvanced Hyperspectral Imager (AHSI) SSI 5 nm @ VNIR , 10 nm @ SWIR, 400-2500 - free for scientifc users obtainable from chinese partners
+
+Future: 
+
+- PRISMA pan 400-7000, vnsiwir, 30 gsd, 10 nm FWHM, 7 days revisit launch date 8 march 2019
+- HISUI  launch Jan 2020 400 2500 nm , 20 ssd, 2km swath
+- EnMAP vnir 420 - 1000 , swir 900 2450 , gsd 30 m, revisit 27d
+- EMIT (NASA) 380 - 2510 covie3ring dust sources (N Africa etc)
+
+***
+SPACE-1 
+
+- Commisioning phase of the satellite mission DESIS
+
+- Teledyne ( amazon cloud) , DLR,
+- comisioning phase in orbit radiometric characterisaiotn, LED, comparison to ground reflectance 
+- data policy - accesible through DLR, via scientific proposal. 
+
+***
+- EMIT - mineral dust sources 
+- dust cicle affects radiative forcing
+
+*** 
+#### Betsy Middleton (NASA)
+
+- Hyperion fAPAR 
+- Ecosystems = f(climate)
+- physically based model for fAPAR
+- VI for Chl
+- Satellite data wit info for both fAPAR and Chl
+- advanced version of prosail LVS3 outputs fAPAR, canopy, fAPAR chl, fAPARnon-chl (zhang 2019, middleton). 
+- chl index from gittelson (2011)
+- EVI2 follows FAPARchl, NIRv strange FAPARnonchl
+- in general FAPAR = FAPAR = ToTAl canopy
+- Faparch ~ 2/3 FAPAR cnopy
+-Ratio green brown varies with ecosystems
+-GPP more related with fAPARchl
+
+***
+- sbg summary from earth science decadal survey esds 2017
+- surface biology and geology 
+
+
+### Word Count - most common one, two, and three word combinations in the Talk & Poster titles
+
+```{r}
+library(readxl)
+words <- list()
+words[["one"]] <- read_excel("D:/Poster_earsel/earsel_word_count.xlsx", 
+    sheet = "Sheet1")
+words[["two"]] <- read_excel("D:/Poster_earsel/earsel_word_count.xlsx", 
+    sheet = "Sheet2")
+words[["three"]] <- read_excel("D:/Poster_earsel/earsel_word_count.xlsx", 
+    sheet = "Sheet3")
+```
+
+```{r, fig.width=6, fig.height=9}
+library(ggplot2)
+wc1 <- ggplot(words[["one"]], aes(reorder(word, n, sum), n)) +
+    geom_col() + theme_bw(base_size = 15) + coord_flip() +
+    labs(title = "Single most common word") + 
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_blank())
+
+wc2 <- ggplot(words[["two"]], aes(reorder(word, n, sum), n)) +
+    geom_col() + theme_bw(base_size = 15) + coord_flip() +
+    labs(title = "Two word combinations") +
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_blank())
+
+wc3 <- ggplot(words[["three"]], aes(reorder(word, n, sum), n)) +
+    geom_col() + theme_bw(base_size = 15) + coord_flip() +
+    labs(title = "Three word combinations") +
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_blank())
+
+
+cowplot::plot_grid(wc1, wc2, wc3, nrow = 3, align = "hv")
+```
+
+![Brno Planetarium](D:/Poster_earsel/IMG_0134.JPG)

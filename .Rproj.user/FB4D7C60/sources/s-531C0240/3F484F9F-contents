@@ -1,0 +1,757 @@
+---
+title: "figures"
+author: "D. Emin"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, fig.width = 9, fig.height = 9)
+```
+
+```{r packages}
+library(raster)
+library(sp)
+library(rgdal)
+library(tidyverse)
+library(dplyr)
+```
+
+```{r input}
+# input
+# here import the environment which you created 
+# it includes all objects we will need
+# 
+load("poster_intput.rdata")
+```
+
+## Introduction graphs
+
+![](D:/Fieldwork_2018/Visuals/papermap71.png){height=500px, width=600px}
+
+
+![](D:/Fieldwork_2018/Visuals/field4.jpg)
+
+
+```{r spatiotemporal-sif, message=FALSE, warning=FALSE, echo=FALSE, fig.height= 3 , fig.cap=" Mobile SIF 760 measurements in (**a**) winter wheat and (**b**) sugar beet. Symbols represent different location, line shows diurnal SIF 760 course at one location. Measurements in winter wheat were performed on 6th of June, while those in sugar beet - on 26-27th of June"}
+
+
+#plot mobile SIF and diurnal SIF in various crops  for 26.and 27. 07.2018
+hy.mob.26 <- hy.mob.26 %>% filter(lu == "sugar.beet")
+hy.mob.27 <- hy.mob.27 %>% filter(lu == "sugar.beet")
+
+plot1 <- ggplot(hy.mob.26, aes(doy.dayfract%%1, SIF_A_ifld)) +
+  theme_bw() +
+  geom_point(pch = as.factor(hy.mob.26$loc)) +
+  geom_point(data = hy.mob.27, pch = as.factor(hy.mob.27$loc)) +
+  geom_step(data = hy.diurn.28, linetype = 1) +
+  xlab("fractional time (CEST)") +
+  ylim(0, 2.5) +
+  xlim(0.35, 0.6) +
+  ylab(expression("SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) 
+
+plot2 <- ggplot(wheat.mob2, aes(doy.dayfract%%1, SIF_A_ifld)) + 
+  theme_bw() +
+  ylab(expression("SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+  geom_point(pch = as.factor(wheat.mob2$Location.x)) +
+  geom_step(data = hy.diurn.28, linetype = 1) +
+  xlab("fractional time (CEST)") +
+  ylim(0, 2.5) +
+  xlim(0.35, 0.55) 
+  
+
+cowplot::plot_grid(plot2, plot1, labels = "auto", label_y = .95, label_x = 0.2, label_fontfamily = "mono")
+```
+
+
+```{r}
+sb.st.26.1 <- sb.st.26 %>% group_by(loc) %>% summarise(down_cor_SIF_A_ifld.x = mean(down_cor_SIF_A_ifld.x),
+                                         SIF_A_ifld.sd.x = mean(SIF_A_ifld.sd.x, na.rm = T),
+                                         date = mean(date))
+```
+
+```{r}
+sb.st.27.1 <- sb.st.27 %>% group_by(loc) %>% summarise(down_cor_SIF_A_ifld.x = mean(down_cor_SIF_A_ifld.x),
+                                         SIF_A_ifld.sd.x = mean(SIF_A_ifld.sd.x, na.rm = T),
+                                         date = mean(date))
+```
+
+
+```{r spatiotemporal-sif-sb, message=FALSE, warning=FALSE, fig.height= 6 , fig.cap=" Mobile SIF 760 measurements in sugar beet for two days (26 and 27. 06). Symbols represent different location, line shows diurnal SIF 760 course at one location. Measurements in winter wheat were performed on 6th of June, while those in sugar beet - on 26-27th of June"}
+
+
+  
+fig5 <- ggplot(hy.diurn.26, aes(date, SIF_A_ifld)) 
+
+fig5 <- fig5 + 
+    geom_ribbon(aes(ymin =  SIF_A_ifld - SIF_A_ifld_rollsd5, 
+                    ymax =  SIF_A_ifld + SIF_A_ifld_rollsd5), fill= '#D3D3D3') + 
+    geom_line() + 
+    geom_vline(xintercept = as.POSIXct("2018-06-26 13:30:00"), lty = 2, size = 1.5) + 
+    theme_bw(base_size = 22) + 
+    xlab("Universal Time (UTC)") +
+    ylim(1, 2.2) +
+    xlim(as.POSIXct("2018-06-26 12:00:00"), as.POSIXct("2018-06-26 15:00:00"))
+
+
+fig5 <- fig5 + 
+    geom_text(aes(x =  as.POSIXct("2018-06-26 13:35:00"), y = 2.05), label = "HyPlant Overpass", hjust=0, size = 10) +
+    ylab(expression("F 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) 
+
+
+fig5 + geom_point(data = sb.st.26.1, aes(date - 2*3600, down_cor_SIF_A_ifld.x), size = 3, stroke = 2) +
+    geom_errorbar(data = sb.st.26.1,
+                  aes(x = date  - 2*3600, y = down_cor_SIF_A_ifld.x,  
+                      ymin = down_cor_SIF_A_ifld.x - SIF_A_ifld.sd.x, 
+                      ymax = down_cor_SIF_A_ifld.x + SIF_A_ifld.sd.x), 
+                  width=250, size = 1) +
+    # scale_shape_manual(values=c(0:8))  +
+    theme(legend.position = "none")
+  
+
+
+  
+# 
+# 
+# plot2 <- ggplot(wheat.mob2, aes(doy.dayfract%%1, SIF_A_ifld)) + 
+#   theme_bw() +
+#   ylab(expression("SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+#   geom_point(pch = as.factor(wheat.mob2$Location.x)) +
+#   geom_step(data = hy.diurn.28, linetype = 1) +
+#   xlab("fractional time (CEST)") +
+#   ylim(0, 2.5) +
+#   xlim(0.35, 0.55) 
+#   
+# 
+# cowplot::plot_grid(plot2, plot1, labels = "auto", label_y = .95, label_x = 0.2, label_fontfamily = "mono")
+```
+
+```{r spatiotemporal-sif-sb2, message=FALSE, warning=FALSE, fig.height= 6 , fig.cap=" Mobile SIF 760 measurements in sugar beet for two days (26 and 27. 06). Symbols represent different location, line shows diurnal SIF 760 course at one location. Measurements in winter wheat were performed on 6th of June, while those in sugar beet - on 26-27th of June"}
+
+
+  
+fig6 <- ggplot(hy.diurn.27, aes(date, SIF_A_ifld)) 
+
+fig6 <- fig6 + 
+    geom_ribbon(aes(ymin =  SIF_A_ifld - SIF_A_ifld_rollsd5, 
+                    ymax =  SIF_A_ifld + SIF_A_ifld_rollsd5), fill= '#D3D3D3') + 
+    geom_line() + 
+    geom_vline(xintercept = as.POSIXct("2018-06-27 09:00:00"), lty = 2, size = 1.5) + 
+    theme_bw(base_size = 22) + 
+    xlab("Universal Time (UTC)") +
+    ylim(0.85, 1.8) +
+    xlim(as.POSIXct("2018-06-27 8:30:00"), as.POSIXct("2018-06-27 10:00:00"))
+
+
+fig6 <- fig6 + 
+    geom_text(aes(x =  as.POSIXct("2018-06-27 09:01:00"), y = 1.75), label = "HyPlant Overpass", hjust=0, size = 10) +
+    ylab(expression("F 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) 
+
+
+fig6 + geom_point(data = sb.st.27.1, aes(date  - 2*3600, down_cor_SIF_A_ifld.x), shape = 16, size = 3, stroke = 2, color = "blue") +
+    geom_errorbar(data = sb.st.27.1,
+                  aes(x = date  - 2*3600, y = down_cor_SIF_A_ifld.x,  
+                      ymin = down_cor_SIF_A_ifld.x - SIF_A_ifld.sd.x, 
+                      ymax = down_cor_SIF_A_ifld.x + SIF_A_ifld.sd.x), 
+                  width=250, size = 1) +
+    # scale_shape_manual(values=c(21:25,12,7))  +
+    theme(legend.position = "none")
+  
+
+
+  
+# 
+# 
+# plot2 <- ggplot(wheat.mob2, aes(doy.dayfract%%1, SIF_A_ifld)) + 
+#   theme_bw() +
+#   ylab(expression("SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+#   geom_point(pch = as.factor(wheat.mob2$Location.x)) +
+#   geom_step(data = hy.diurn.28, linetype = 1) +
+#   xlab("fractional time (CEST)") +
+#   ylim(0, 2.5) +
+#   xlim(0.35, 0.55) 
+#   
+# 
+# cowplot::plot_grid(plot2, plot1, labels = "auto", label_y = .95, label_x = 0.2, label_fontfamily = "mono")
+```
+
+
+
+## Variability of mobile and diurnal measurements
+
+```{r}
+
+#base synthax
+par(mfrow = c(1,2))
+
+with(sb.st, hist(SIF_A_ifld_rollsd5, xlab="Moving SD diurnal SIF in O2A", main = NULL))
+abline(v = mean(sb.st$SIF_A_ifld_rollsd5), lty= 2)
+abline(v = median(sb.st$SIF_A_ifld_rollsd5), lty= 2, col="red")
+text(.11, 8, bquote(bar(x) == .(round(mean(sb.st$SIF_A_ifld_rollsd5),3))), pos=4)
+text(.11, 7, bquote(tilde(x) == .(round(median(sb.st$SIF_A_ifld_rollsd5),3))), pos=4)
+text(.11, 6, bquote(SNR == .(round(mean(sb.st$SIF_A_ifld.y)/mean(sb.st$SIF_A_ifld_rollsd5, na.rm=TRUE),1))), pos=4)
+
+with(sb.st, hist(SIF_A_ifld.sd.x, xlab="SD Mobile SIF in O2A", main = NULL))
+abline(v = mean(sb.st$SIF_A_ifld.sd.x, na.rm=TRUE), lty= 2)
+abline(v = median(sb.st$SIF_A_ifld.sd.x, na.rm=TRUE), lty= 2, col="red")
+text(.11, 7, bquote(bar(x) == .(round(mean(sb.st$SIF_A_ifld.sd.x, na.rm = TRUE),3))), pos=4)
+text(.11, 6, bquote(tilde(x) == .(round(median(sb.st$SIF_A_ifld.sd.x, na.rm = TRUE),3))), pos=4)
+text(.11, 5, bquote(SNR == .(round(mean(sb.st$SIF_A_ifld.x, na.rm=TRUE)/mean(sb.st$SIF_A_ifld.sd.x, na.rm=TRUE),1))), pos=4)
+
+
+with(sb.st, plot(SZA, SIF_A_ifld_rollsd5))
+text(24,.06,bquote(paste("Pearson's ", rho) == .(round(cor(sb.st$SIF_A_ifld_rollsd5, sb.st$SZA),2))), pos=4)
+```
+
+```{r, include=FALSE}
+with(sb.st, hist(SIF_A_ifld.sd.y, xlab="SD of diurnal SIF in O2A", main = NULL))
+abline(v = mean(sb.st$SIF_A_ifld.sd.y), lty= 2)
+abline(v = median(sb.st$SIF_A_ifld.sd.y), lty= 2, col="red")
+text(.11, 8, bquote(bar(x) == .(round(mean(sb.st$SIF_A_ifld.sd.y),3))), pos=4)
+text(.11, 7, bquote(tilde(x) == .(round(median(sb.st$SIF_A_ifld.sd.y),3))), pos=4)
+text(.11, 6, bquote(SNR == .(round(mean(sb.st$SIF_A_ifld.y)/mean(sb.st$SIF_A_ifld.sd.y, na.rm=TRUE),1))), pos=4)
+
+
+```
+
+```{r, eval=FALSE}
+par(mfrow = c(2,2))
+with(sb.st %>% filter(SNR.x < 50), plot(SNR.x, lai.suns))
+
+with(sb.st %>% filter(SNR.x < 50), plot(SNR.x, spad))
+
+with(sb.st %>% filter(SNR.x < 50), plot(SNR.x, SIF_A_ifld.x))
+
+with(sb.st %>% filter(SNR.x < 50), plot(SNR.x, SZA))
+
+with(sb.st %>% filter(SNR.x < 50), plot(SIF_A_ifld.y/SIF_A_ifld_rollsd5, SZA))
+
+with(sb.st %>% filter(SNR.y < 50), hist(SNR.y))
+```
+
+```{r, eval=FALSE}
+par(mfrow = c(2,2))
+with(sb.st %>% filter(SNR.x < 30), plot(log10(SNR.x), lai.suns))
+
+with(sb.st %>% filter(SNR.x < 50), plot(log10(SNR.x), spad))
+
+with(sb.st %>% filter(SNR.x < 50), plot(log10(SNR.x), SIF_A_ifld.x))
+
+with(sb.st %>% filter(SNR.x < 50), plot(log10(SNR.x), SZA))
+
+```
+
+
+
+```{r table1, echo=FALSE, results='asis'}
+
+# summary table for both crops
+
+knitr::kable(table1  %>% 
+        group_by(lu) %>% 
+        summarise( start.Date = substr(min(date), 1, 10),
+                   end.Date = substr(max(date), 1, 10),
+                   n.obs = n(), 
+                   n.locs = length(unique(loc)), 
+                   `SIF A` = round(mean(SIF_A_ifld),2),
+                   SD = round(sd(SIF_A_ifld),2),
+                   `SIF B` = round(mean(SIF_B_ifld),2),
+                   SD1 = round(sd(SIF_B_ifld),2),
+                   LAI = round(mean(lai.suns, na.rm = TRUE),2)), caption = "Summary of SIF values measured in sugar beet and wheat")
+```
+
+
+```{r descriptive-stats, message=FALSE, warning=FALSE, echo=FALSE, fig.height= 3 , fig.cap="Histogram distribution (**a**) and boxplots (**b**b) of SIF 760 in sugar beet and winter wheat"}
+
+a <- ggplot(table1, aes(x=SIF_A_ifld, fill=lu)) + 
+  theme_bw() +
+  geom_histogram(binwidth=.1, position="dodge")
+
+b <- ggplot(table1, aes(y=SIF_A_ifld, x=lu, color=lu)) +
+  theme_bw() +
+  geom_boxplot()  
+
+cowplot::plot_grid(a, b, labels = "auto", label_y = .95, label_x = 0.2, label_fontfamily = "mono")
+```
+
+## Theoretical curves
+
+
+The correction is based on the following equation derived empirically from August data. Recalculation SIF for any location for any time of the day is possible if there is: 
+
+* at least one SIF measurement at the location of interest - F observation ($F_{o}$) 
+
+* a diurnal SIF curve - F diurnal ($F_{d}$)
+
+* LAI for both location of interest and for location of diurnal measurement ($LAI_{o}$ and $LAI_{d}$)
+
+Then SIF at observation location for any time $x$ is found through: 
+
+\begin{equation} \label{eq:1}
+F_{ox} = F_{oo} + \frac{LAI_o}{LAI_d}.(F_{dx} - F_{do})
+\end{equation}
+
+In equation (1) first suffix is reserved for the location (o - observation (mobile) location, d- diurnal location) and second suffix - for time. In other word, SIF at mobile location $o$ at time $x$ $F_{ox}$ equals the SIF at observation location at observation time $F_{oo}$ corrected by the product of change in diurnal SIF between observation time and time $x$ -  $(F_{dx} - F_{do})$,  and the ratio of LAI for both location -  $\frac{LAI_o}{LAI_d}$
+
+
+```{r}
+library(reshape2)
+
+f <- function(x,a,b) a*x^2 + b*x 
+data <- data.frame(x = seq(0,1, b = 0.001))
+
+f1 <- function(x) -0.50*x^2 + 0.50*x
+f2 <- function(x) -0.45*x^2 + 0.45*x
+f3 <- function(x) -0.40*x^2 + 0.40*x
+
+data$curv1 <- f1(data$x)
+# data$curv2 <- f2(data$x)
+data$curv3 <- f3(data$x)
+
+vert = c( 0.35, 0.42, 0.5)
+points1 <- 
+  data.frame(x = rep(vert[1],2),
+             y = c(f1(vert[1]), 
+                   # f2(vert[1]),
+                   f3(vert[1])
+             )
+  )
+points2 <- 
+  data.frame(x = rep(vert[2],2),
+             y = c(f1(vert[2]), 
+                   # f2(vert[2]),
+                   f3(vert[2])
+             )
+  )
+
+points3 <- 
+  data.frame(x = rep(vert[3],2),
+             y = c(f1(vert[3]), 
+                   # f2(vert[3]),
+                   f3(vert[3])
+             )
+  )
+
+lai <- 
+  data.frame(x = rep(0.7,2),
+             y = c(f1(0.7), 
+                   # f2(0.7),
+                   f3(0.7)), 
+             text = paste("LAI", c(2:1))
+  )
+
+points <- rbind(points1, points2, points3)
+segments <- data.frame(x1 = c(points1$x, points2$x),
+                       y1 = c(points1$y, points2$y),
+                       x2 = rep(points3$x,2),
+                       y2 = c(points1$y, points2$y) )
+segments2 <- data.frame(x1 = c(points3$x+0.005, points3$x -0.005), 
+                        y1 = c(points1$y, points2$y), 
+                        x2= c(points3$x+0.005, points3$x -0.005), 
+                        y2 = rep(points3$y,2) )
+labels.coord1 <- data.frame( y = c(points2$y + (points3$y - points2$y)/2), x = points3$x - 0.03)
+labels.coord2 <- data.frame( y = c(points1$y + (points3$y - points1$y)/2), x = points3$x + 0.03)
+labels.coord3 <- data.frame( x = points3$x + 0.025, y = points3$y + 0.0015)
+labels.coord4 <- data.frame( x = c(points2$x, points1$x)-0.025, y = c(points2$y, points1$y) +0.0015)
+
+data1 <- melt(data, id="x")
+```
+
+
+```{r, fig.asp=1, fig.height=8}
+size = 12
+plot1 <- ggplot() +
+  geom_line(data = data1, aes(x, value, color=variable), size = 2) + 
+  geom_vline(xintercept = vert, linetype=5) + 
+  geom_point(data = points, aes(x=x, y=y), colour ="black", cex=3) +
+  ylim(0.08,0.135) +
+  ylab(expression("F 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+  xlab("Time of the day") +
+  scale_x_continuous(breaks = c(0.35, 0.42, 0.5), 
+                     labels = c(expression(t["o"]), 
+                                expression(t["x"]), 
+                                expression(t["Noon"])) , limits = c(0.30, 0.65)
+                     ) +
+  labs(title = "Theoretical diurnal Fluorescence", subtitle = "For two LAIs")+
+  theme_bw(base_size = 26) +
+  theme(legend.position = 'none',
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
+        axis.text.x = element_text(face = "bold", size = size + 15))  +
+  geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2),
+               data = segments,
+               linetype = 5) +
+  geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), 
+               data = segments2, linetype = 1, lwd=1, 
+               arrow = arrow(type = "closed", angle = 20, length = unit(x=0.1, "inches"))) +
+  geom_segment(aes(x = x2, y = y2, xend = x1, yend = y1), 
+               data = segments2, linetype = 1, lwd=1, 
+               arrow = arrow(type = "closed", angle = 20, length = unit(x=0.1, "inches"))) + 
+  geom_text(aes(x=labels.coord2$x[1], y=labels.coord2$y[1], family="mono"), label = expression( Delta*"F" ["2o"]), colour = "black", size = size) +
+  geom_text(aes(x=labels.coord2$x[2], y=labels.coord2$y[2], family="mono"), label = expression( Delta*"F" ["1o"]), colour = "black", size = size) +
+  geom_text(aes(x=labels.coord1$x[1], y=labels.coord1$y[1], family="mono"), label = expression( Delta*"F" ["2x"]), colour = "black", size = size-3) +
+  geom_text(aes(x=labels.coord1$x[2], y=labels.coord1$y[2], family="mono"), label = expression( Delta*"F" ["1x"]), colour = "black", size = size-3) +
+  geom_text(aes(x=labels.coord3$x[1], y=labels.coord3$y[1], family="mono"), label = expression("F"["2N"]), colour = "black", size = size) +
+  geom_text(aes(x=labels.coord3$x[2], y=labels.coord3$y[2], family="mono"), label = expression("F"["1N"]), colour = "black", size = size) +
+  geom_text(aes(x=labels.coord4$x[1], y=labels.coord4$y[1], family="mono"), label = expression("F"["2x"]), colour = "black", size = size) + 
+  geom_text(aes(x=labels.coord4$x[2], y=labels.coord4$y[2], family="mono"), label = expression("F"["1x"]), colour = "black", size = size) +
+  geom_text(aes(x=labels.coord4$x[3], y=labels.coord4$y[3], family="mono"), label = expression("F"["2o"]), colour = "black", size = size) + 
+  geom_text(aes(x=labels.coord4$x[4], y=labels.coord4$y[4], family="mono"), label = expression("F"["1o"]), colour = "black", size = size) +
+  geom_text(data = lai, aes(x=x - 0.075, y=y + 0.004, family="mono", label = text), colour = "black", size = size) 
+
+plot1
+```
+
+```{r}
+# rm(f,f1, f2, f3, data, points1,points2, 
+#    points3, lai, points, segments, 
+#    segments2, labels.coord1, labels.coord2,
+#    labels.coord3, labels.coord4, data1)
+# 
+# take the default colors from previous graph  
+g_color_hue <- function(n) {
+    hues = seq(15, 375, length = n + 1)
+    hcl(h = hues, l = 65, c = 100)[1:n]
+}
+n = 2
+cols = g_color_hue(n)
+
+# Figure 2 examplifying the correction equation for SIF-validation paper
+a0 = 1.2
+ax = 0.8
+lai = c(lai2 = 2, lai1 = 3.5)
+
+data2 <- data.frame(x=lai, dFt0 = a0*lai, dFtx = ax*lai, cols = cols)
+data3 <- melt(data = data2, id=c("x","cols"))
+
+t.lables <- data.frame(x = c(4,4.8), y=c(a0*4,ax*4.8))
+
+data3
+data2
+```
+
+```{r, fig.asp=0.8, fig.height=8}
+labs
+plot2 <- ggplot() + 
+    geom_point(data = data3, 
+               aes(x=x, y=value), size = 4) +
+    geom_abline(intercept = 0, slope = c(a0,ax, 0.01), size = 1.5) +
+    theme_bw(base_size = 22) +
+    theme(legend.position = "none", panel.grid.major = element_blank()) +
+    scale_y_continuous(expand = c(0, 0),
+                       limits = c(0, 5), 
+                       breaks = c(data3$value, 0),
+                       labels = c(expression( Delta*"F" ["1o"]),
+                                  expression( Delta*"F" ["2o"]),
+                                  expression( Delta*"F" ["1x"]),
+                                  expression( Delta*"F" ["2x"]),
+                                  expression( Delta*"F" ["nx"] %~~% Delta*"F" ["no"] %~~% 0))) +
+    scale_x_continuous(expand = c(0, 0),
+                       limits = c(0, 5),
+                       breaks = data2$x, 
+                       labels = c("LAI 1", "LAI 2")) +
+    geom_segment(aes(x = rep(0,4), xend= data3$x, y=data3$value, yend=data3$value, color = data3$cols),
+                  linetype =5, size = 1.5) +
+    geom_segment(aes(x = data2$x, xend= data2$x, y=c(0,0), yend=data2$dFt0, color = data2$cols),
+                 linetype =5,  size = 1.5) +
+    geom_text(aes(x=t.lables$x[1]-0.5, y=t.lables$y[1]), label= expression("t"["0"]), size = 12 ) +
+    geom_text(aes(x=t.lables$x[2]-0.5, y=t.lables$y[2]), label= expression("t"["x"]), size = 12 ) + 
+    geom_text(aes(x=t.lables$x[2]-0.5, y=t.lables$y[2]- 3.5), label= expression("t"["Noon"]), size = 12 ) +
+    xlab(expression("LAI ["~m^{2}%.%m^{-2}~"]")) +
+    ylab(expression(Delta*"F 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]"))
+
+plot2
+```
+
+
+
+
+
+```{r, fig.height=4}
+cowplot::plot_grid(plot1, plot2)
+```
+
+## Results
+
+
+```{r, include=FALSE}
+lm_eqn <- function(df){
+  m <- lm(y ~ x, df);
+  eq <- substitute(y == a + b %.% x*","~~r^2~"="~r2, 
+                   list(a = round(as.numeric(coef(m)[1]), 2), 
+                        b = round(as.numeric(coef(m)[2]), 2), 
+                        r2 = round(summary(m)$r.squared, 2)
+                        )
+                   )
+  as.character(as.expression(eq));                 
+}
+```
+
+
+
+
+```{r, overview, message=FALSE, warning=FALSE, echo=FALSE, fig.height=6, fig.cap = "Locations measured using mobile procedure . Size of circles corresponds to leaf are index. Density of colour reflects inside circles shows the ammount of *raw* SIF emitted at time of measurement. Basemap shows SIF from 26.06.2018 at 10:46 local time"}
+ggplot() +
+  geom_tile(data = icos.sb, aes(x=x, y=y, fill = SIF760..iFLD)) +    
+  scale_fill_viridis_c()+
+  geom_point(data = wheat.mob, aes(magvar, geoidheigh, size = Sunscan, color = SIF_A_ifld)) + coord_equal() + theme_bw()+ scale_color_distiller(palette = "Greens", direction = 1) +
+  geom_point(data = mobile2, aes(magvar, geoidheigh, size = lai.suns, color = SIF_A_ifld.x)) +
+  labs(x = "Easting (m)", y = "Northing (m)") +
+  theme(legend.position="bottom")
+```
+
+```{r sb, message=FALSE, warning=FALSE, echo=FALSE,fig.height=9, fig.cap = "Locations in sugar beet field measured using mobile procedure. Size of circles and values corresponds to leaf are index. Density of colour inside circles reflects the ammount of *time/LAI corrected* SIF. Basemap shows SIF from 26.06.2018 at 10:46 local time."}
+
+sb.st <- sb.st %>% mutate(trans = substr(loc, 3,3))
+
+ggplot() +
+  geom_tile(data = icos.sb, aes(x=x, y=y, fill = SIF760..iFLD)) +    
+  scale_fill_viridis_c()+
+  coord_equal() +
+  theme_bw(base_size = 24) + 
+  geom_point(data = sb.st, aes(magvar, geoidheigh - 3, color = trans), size = 8) +
+    scale_color_manual(values = c("black", "blue"), guide = F) +
+    scale_y_continuous(breaks = 
+                       seq(extent(icos.sb)@ymin,extent(icos.sb)@ymax,by=100)) +
+    labs(x = element_blank(), y = element_blank(), title= "Two transect", subtitle = "Basemap: Airborne F760 on 27.07.2018") +
+  geom_text(data=sb.st, aes(x = magvar - 10, y = geoidheigh-2 ,label= lai.suns),hjust=-.25, vjust=-.75, size = 6) +
+    geom_text(aes(x = 320790, y = 5637733 ,label= "LAI ="),hjust=0.5, vjust=-1, size = 6) +
+  theme(axis.text.y = element_text(angle = 90, hjust = 0.5), legend.position = c(0.75,.11), legend.direction = "horizontal", legend.text = element_text(size = 12), legend.title = element_text(size = 15)) +
+  guides(fill = guide_colorbar(title = expression("F 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]"), 
+                               title.position = "top", barheight = 0.5, barwidth = 15),
+         size = guide_legend(title = expression("LAI ["~m^{2}%.%m^{-2}~"]"), title.position = "top"))
+```
+
+ 
+```{r sifvslai, message=FALSE, warning=FALSE, echo=FALSE, fig.height= 6 , fig.cap= "Scatterplot of leaf area index (LAI) against (**a**) SIF 760, (**b**) relative SIF 760, (**C**) lai corrected SIF 760 in sugar beet Each point represents an average estimate within a 5 minute window. Relative SIF 760 was calculated as the difference between location SIF  and SIF for that time of the day from the stationary refference device. Blue line is a linear model predicting both sif variables from LAI. The grey area is the 95% prediction confidence interval from a linear model "}
+
+#now is time to see if rsif is better correlated with LAI than normal sif
+
+tmp <- data.frame(y = sb.st$SIF_A_ifld.x, x = sb.st$lai.suns)
+plot1 <- ggplot(sb.st, aes(y = SIF_A_ifld.x, x= lai.suns)) + 
+          theme_bw() + 
+          geom_point() + 
+          geom_smooth(method = "lm") + 
+          xlab(expression("LAI ["~m^{2}%.%m^{-2}~"]")) +
+          ylab(expression("SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) + 
+          geom_text(aes(x=3.0, y=1.1, family = "mono"), label = lm_eqn(tmp), parse = TRUE, cex = 3)
+
+tmp <- data.frame(y = sb.st$rSIF_A_ifld, x = sb.st$lai.suns)  
+plot2 <- ggplot(sb.st, aes(lai.suns, rSIF_A_ifld)) + 
+          theme_bw() + 
+          geom_point() + geom_smooth(method = "lm") + 
+          xlab(expression("LAI ["~m^{2}%.%m^{-2}~"]")) + 
+          ylab(expression("rSIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) + 
+          geom_text(aes(x=3.0, y=-0.6, family = "mono"), label = lm_eqn(tmp), parse = TRUE, cex = 3)
+
+tmp <- data.frame(y = sb.st$nrSIF_A_ifld, x = sb.st$lai.suns)  
+plot3 <- ggplot(sb.st, aes(lai.suns, nrSIF_A_ifld)) + 
+          theme_bw() + 
+          geom_point() + geom_smooth(method = "lm") + 
+          xlab(expression("LAI ["~m^{2}%.%m^{-2}~"]")) + 
+          ylab(expression("nrSIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) + 
+          geom_text(aes(x=2.6, y=1.35, family = "mono"), label = lm_eqn(tmp), parse = TRUE, cex = 3)
+
+
+cowplot::plot_grid(plot1, plot2, plot3, labels = "auto", label_y = .95, label_x = 0.2, label_fontfamily = "mono")
+```
+
+
+```{r}
+sb1 <- sb.st.26 %>% mutate(trans = substr(loc, 3,3)) %>% select(doy.dayfract, down_cor_SIF_A_ifld.x, SIF_A_ifld.x,SIF_A_ifld.sd.x,
+                                                         rSIF_A_ifld, nrSIF_A_ifld, lai.suns, trans)
+sb.st.26.2 <- bind_cols(sb1, sb.st.hyplant.26)
+
+
+sb2 <- sb.st.27 %>% mutate(trans = substr(loc, 3,3)) %>% select(doy.dayfract, down_cor_SIF_A_ifld.x, SIF_A_ifld.x,SIF_A_ifld.sd.x,
+                                                         rSIF_A_ifld, nrSIF_A_ifld, lai.suns, trans)
+sb.st.26.3 <- bind_cols(sb2, sb.st.hyplant.27)
+
+sb.st.n <- bind_rows(sb.st.26.2, sb.st.26.3)
+```
+
+
+```{r hy-sif, fig.cap="Comparison between HyPlant SIF and (b) *raw* SIF, (c) relative SIF, (d) lai corrected SIF from FLOX. One standard deviation of FLOX SIF and LAI values for each location are shown. "}
+
+mobile3 <- sb.st.n %>% group_by(loc) %>% summarise( doy.dayfract = mean(doy.dayfract, na.rm = TRUE),
+                                                    dSIF_A = mean(down_cor_SIF_A_ifld.x, na.rm = TRUE),
+                                                    SIF_A = mean(SIF_A_ifld.x, na.rm = TRUE),
+                                                    SIF_A_sd = mean(SIF_A_ifld.sd.x, na.rm = TRUE),
+                                                   rSIF_A = mean(rSIF_A_ifld, na.rm = TRUE),
+                                                   rSIF_A_sd = sd(rSIF_A_ifld, na.rm = TRUE),
+                                                  nrSIF_A = mean(nrSIF_A_ifld, na.rm = TRUE),
+                                                  nrSIF_A_sd = sd(nrSIF_A_ifld, na.rm = TRUE),
+                                                   SIF760 = mean(SIF760..iFLD, na.rm = TRUE),
+                                                   lai = mean(lai.suns, na.rm = TRUE),
+                                                  trans = unique(trans))
+
+# plot1 <- ggplot(mobile3, aes(SIF760, SIF_A)) + 
+#   geom_point(aes(color = trans)) +
+#   scale_color_manual(values = c("black", "blue")) + 
+#   theme_bw() + 
+#   geom_errorbar(aes(x = SIF760, ymin = SIF_A - SIF_A_sd, ymax = SIF_A + SIF_A_sd)) +
+#   geom_abline(intercept = 0, slope = 1) + geom_text(aes(label=lai), hjust= 1.2) + 
+#   ylab(expression("FLOX SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+#   xlab(expression("HyPlant SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+#   ylim(0,2.5) + xlim(0,2.5) +
+#   geom_smooth(method = 'lm')
+
+plot2 <- ggplot(mobile3, aes(SIF760, rSIF_A)) + 
+  geom_point() + 
+  theme_bw() + 
+  geom_errorbar(aes(x = SIF760, ymin = rSIF_A - rSIF_A_sd, ymax = rSIF_A + rSIF_A_sd)) +
+  geom_abline(intercept = 0, slope = 1) + geom_text(aes(label=lai), hjust= 1.2) + 
+  ylab(expression("rFLOX SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+  xlab(expression("HyPlant SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+  ylim(0,2.5) + xlim(0,2.5) +
+  geom_smooth(method = 'lm')
+
+plot3 <- ggplot(mobile3, aes(SIF760, nrSIF_A)) + 
+  geom_point() + 
+  theme_bw() + 
+  geom_errorbar(aes(x = SIF760, ymin = nrSIF_A - nrSIF_A_sd, ymax = nrSIF_A + nrSIF_A_sd)) +
+  geom_abline(intercept = 0, slope = 1) + geom_text(aes(label=lai), hjust= 1.2) + 
+  ylab(expression("nrFLOX SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+  xlab(expression("HyPlant SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+  ylim(0,2.5) + xlim(0,2.5) +
+  geom_smooth(method = 'lm')
+
+
+plot4 <- ggplot() + 
+    geom_step(data = hy.diurn.27, aes(x= doy.dayfract%%1, y = SIF_A_ifld)) +
+    geom_point(data = mobile3,aes(x= doy.dayfract%%1, y = dSIF_A)) +
+    geom_point(data = mobile3,aes(x= doy.dayfract%%1, y = SIF_A), shape = 2) +
+    theme_bw() +
+    ylim(0,2.5) + xlim(0.3,0.5) +
+    geom_vline(xintercept = .37)
+    
+
+cowplot::plot_grid(plot4, plot1, plot2, plot3, ncol = 2)
+```
+
+```{r, fig.asp=1, fig.width=6}
+ plot31 <- ggplot(mobile3, aes(SIF760, SIF_A)) + 
+  geom_point(aes(color = trans), size = 3, stroke =2) + 
+  scale_color_manual(values = c("black", "blue"), guide = F) + 
+  theme_bw(base_size = 20) + 
+  geom_errorbar(aes(x = SIF760, ymin = SIF_A - SIF_A_sd, ymax = SIF_A + SIF_A_sd), size = 1) +
+  geom_abline(intercept = 0, slope = 1) + geom_text(aes(label=lai), hjust= 1.7) + 
+  ylab(expression("FLOX SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+  xlab(expression("HyPlant SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+      labs(title= "Raw") +
+  ylim(0.5,2.1) + xlim(0.5,2.1) + 
+  scale_shape_manual(values=c(0:7)) +
+  theme(legend.position = "none")
+plot31
+```
+
+```{r hy-sif2, eval= TRUE, fig.asp = 1, fig.width= 6, fig.cap="Comparison between HyPlant SIF and lai corrected SIF from FLOX."}
+plot32 <- ggplot(mobile3, aes(SIF760, nrSIF_A)) + 
+ geom_point(aes(color = trans), size = 3, stroke =2) + 
+  scale_color_manual(values = c("black", "blue"), guide = F) +  
+  theme_bw(base_size = 20) + 
+  geom_errorbar(aes(x = SIF760, ymin = nrSIF_A - nrSIF_A_sd, ymax = nrSIF_A + nrSIF_A_sd), size = 1) +
+  geom_abline(intercept = 0, slope = 1) + geom_text(aes(label=lai), hjust= 1.7) + 
+  ylab(expression("nrFLOX SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+  xlab(expression("HyPlant SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+    labs(title= "Corrected") +
+  ylim(0.5,2.1) + xlim(0.5,2.1) +
+  scale_shape_manual(values=c(0:7)) +
+  theme(legend.position = "none")
+plot32
+```
+
+```{r, fig.height=3, fig.asp=1}
+cowplot::plot_grid(plot31,plot32 )
+```
+
+```{r, fig.asp=1, fig.height=6, fig.cap = "Comparison of HyPlant SIF and *time/LAI corrected* SIF from FLOX for varying $LAI_d$ and fixed $F_{dx} = 2$"}
+
+sb.st <- sb.st %>%
+  mutate(
+         rSIF_A_ifld   = SIF_A_ifld.x - SIF_A_ifld.y,
+         nrSIF_A_ifld0  = SIF_A_ifld.x + (lai.suns / 1.5)*(-SIF_A_ifld.y + 2),
+         nrSIF_A_ifld1  = SIF_A_ifld.x + (lai.suns / 2)*(-SIF_A_ifld.y + 2),
+         nrSIF_A_ifld2  = SIF_A_ifld.x + (lai.suns / 2.5)*(-SIF_A_ifld.y + 2),
+         nrSIF_A_ifld3  = SIF_A_ifld.x + (lai.suns / 3)*(-SIF_A_ifld.y + 2),
+         nrSIF_A_ifld4  = SIF_A_ifld.x + (lai.suns / 3.5)*(-SIF_A_ifld.y + 2),
+         nrSIF_A_ifld5 = SIF_A_ifld.x + (lai.suns / 4)*(-SIF_A_ifld.y + 2),
+         nrSIF_A_ifld6  = SIF_A_ifld.x + (lai.suns / 4.5)*(-SIF_A_ifld.y + 2),
+         SIF_A_yield.x = SIF_A_ifld.x / `Incoming at 750nm [W m-2nm-1sr-1].x`,
+         SIF_A_yield.y = SIF_A_ifld.y / `Incoming at 750nm [W m-2nm-1sr-1].y`
+         )
+
+sb.st2 <- sb.st %>%
+  mutate(
+         rSIF_A_ifld   = SIF_A_ifld.x - SIF_A_ifld.y,
+         nrSIF_A_ifld0  = SIF_A_ifld.x + (lai.suns / 4)*(-SIF_A_ifld.y + 0),
+         nrSIF_A_ifld1  = SIF_A_ifld.x + (lai.suns / 4)*(-SIF_A_ifld.y + 0.5),
+         nrSIF_A_ifld2  = SIF_A_ifld.x + (lai.suns / 4)*(-SIF_A_ifld.y + 1),
+         nrSIF_A_ifld3  = SIF_A_ifld.x + (lai.suns / 4)*(-SIF_A_ifld.y + 1.5),
+         nrSIF_A_ifld4  = SIF_A_ifld.x + (lai.suns / 4)*(-SIF_A_ifld.y + 2),
+         nrSIF_A_ifld5  = SIF_A_ifld.x + (lai.suns / 4)*(-SIF_A_ifld.y + 2.5),
+         nrSIF_A_ifld6  = SIF_A_ifld.x + (lai.suns / 4)*(-SIF_A_ifld.y + 3),
+         SIF_A_yield.x = SIF_A_ifld.x / `Incoming at 750nm [W m-2nm-1sr-1].x`,
+         SIF_A_yield.y = SIF_A_ifld.y / `Incoming at 750nm [W m-2nm-1sr-1].y`
+         )
+
+mobile3 <- sb.st %>% group_by(loc) %>% summarise(    rawSIF_A = mean(SIF_A_ifld.x),
+                                                   `LAI = 1.5` = mean(nrSIF_A_ifld0),
+                                                   `LAI = 2` = mean(nrSIF_A_ifld1),
+                                                   `LAI = 2.5` = mean(nrSIF_A_ifld2),
+                                                   `LAI = 3` = mean(nrSIF_A_ifld3),
+                                                   `LAI = 3.5` = mean(nrSIF_A_ifld4),
+                                                   `LAI = 4` = mean(nrSIF_A_ifld5),
+                                                   `LAI = 4.5` = mean(nrSIF_A_ifld6),
+                                                   
+                                                   
+                                                   SIF760 = mean(SIF760..iFLD),
+                                                   lai = mean(lai.suns))
+
+mobile4 <- sb.st2 %>% group_by(loc) %>% summarise(    SIF_A = mean(SIF_A_ifld.x),
+                                                   `Fd = 0` = mean(nrSIF_A_ifld0),
+                                                  `Fd = 0.5` = mean(nrSIF_A_ifld1),
+                                                   `Fd = 1` = mean(nrSIF_A_ifld2),
+                                                   `Fd = 1.5` = mean(nrSIF_A_ifld3),
+                                                   `Fd = 2` = mean(nrSIF_A_ifld4),
+                                                   `Fd = 2.5` = mean(nrSIF_A_ifld5),
+                                                   `Fd = 3` = mean(nrSIF_A_ifld6),
+                                                   
+                                                   
+                                                   SIF760 = mean(SIF760..iFLD),
+                                                   lai = mean(lai.suns))
+
+tmp <- melt(mobile3, 
+            variable.name = "key", 
+            value.name = "value", 
+            id.vars = c("loc", "lai", "SIF760"))
+
+tmp2 <- melt(mobile4, 
+            variable.name = "key", 
+            value.name = "value", 
+            id.vars = c("loc", "lai", "SIF760"))
+
+ggplot(tmp, aes(SIF760, value, color = key)) + 
+  geom_point(size = 3) + 
+  theme_bw(base_size = 22) + 
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_smooth(method = "lm", se = F) +
+  ylab(expression("FLOX SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+  xlab(expression("HyPlant SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+  ylim(0,3.5) + xlim(0.75,1.3) + 
+    theme(legend.position = c(.88,.15), legend.title = element_blank())
+
+
+```
+
+```{r, fig.asp=1, fig.height=6, fig.cap = "Comparison of HyPlant SIF and *time/LAI corrected* SIF from FLOX for varying $F_{dx}$ and fixed $LAI_d = 4$.  "}
+ggplot(tmp2, aes(SIF760, value, color = key)) + 
+  geom_point(size = 2) + 
+  theme_bw(base_size = 22) + 
+  geom_abline(intercept = 0, slope = 1) + 
+  geom_smooth(method = "lm", se = F) +
+  ylab(expression("FLOX SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+  xlab(expression("HyPlant SIF 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+  ylim(0,3.5) + xlim(0.75,1.3) + 
+    theme(legend.position = c(.9,.15), legend.title = element_blank())
+```

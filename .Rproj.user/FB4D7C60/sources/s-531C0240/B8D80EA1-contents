@@ -1,0 +1,364 @@
+---
+title: "Method For Acquiring and Comparing Spatially Explicit Measurements of Sun-induced Flourescence on the Ground"
+subtitle: 'Results: developing a correction mechanism for spatiotemporal SIF measurements on the ground'
+output: 
+    html_document:
+        toc: true
+        toc_depth: 4
+        toc_float:
+          collapsed: false
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+```{r, include=FALSE}
+load("data/meta_out.rdata")
+```
+
+```{r, include=FALSE}
+library(tidyverse)
+```
+
+*** 
+
+### Variability of mobile and diurnal measurements
+
+A descriptive chracterization of the variability of the data from the mobile procedure is shown. The goal is to check if the constant relocation of the instrument has impact on the noise in the data. We compare distribution and average of the SD at sampling location to the rolling standard deviation of diurnal SIF measurements. The rolling SD of the static (reference) box was calculated for window size 10 minutes which corresponds to the average time spent in each location. 
+
+#### Distribution and moments
+
+comparison between both distributions of SD values show similarity. There is no significant diference between mean values. To the left is the distribution of SD values from rolling 10-minute window over the 4 days of diurnal measurements. The stationary device was installed in a sugar beet field to track the diurnal development of SIF during the AtmoFLEX 2018 measurement campaign. To the right is the distribution of SD values for `r length(unique(sb.st$loc))` locations in sugar beet. 
+
+```{r, fig.height=6, fig.width=9}
+
+#base synthax
+par(mfrow = c(1,2))
+
+with(sb.st, hist(SIF_A_ifld_rollsd5, xlab="Moving SD diurnal SIF in O2A", main = NULL))
+abline(v = mean(sb.st$SIF_A_ifld_rollsd5), lty= 2)
+abline(v = median(sb.st$SIF_A_ifld_rollsd5), lty= 2, col="red")
+text(.11, 8, bquote(bar(x) == .(round(mean(sb.st$SIF_A_ifld_rollsd5),3))), pos=4)
+text(.11, 7, bquote(tilde(x) == .(round(median(sb.st$SIF_A_ifld_rollsd5),3))), pos=4)
+text(.11, 6, bquote(SNR == .(round(mean(sb.st$SIF_A_ifld.y)/mean(sb.st$SIF_A_ifld_rollsd5, na.rm=TRUE),1))), pos=4)
+
+with(sb.st, hist(SIF_A_ifld.sd.x, xlab="SD Mobile SIF in O2A", main = NULL))
+abline(v = mean(sb.st$SIF_A_ifld.sd.x, na.rm=TRUE), lty= 2)
+abline(v = median(sb.st$SIF_A_ifld.sd.x, na.rm=TRUE), lty= 2, col="red")
+text(.11, 7, bquote(bar(x) == .(round(mean(sb.st$SIF_A_ifld.sd.x, na.rm = TRUE),3))), pos=4)
+text(.11, 6, bquote(tilde(x) == .(round(median(sb.st$SIF_A_ifld.sd.x, na.rm = TRUE),3))), pos=4)
+text(.11, 5, bquote(SNR == .(round(mean(sb.st$SIF_A_ifld.x, na.rm=TRUE)/mean(sb.st$SIF_A_ifld.sd.x, na.rm=TRUE),1))), pos=4)
+
+```
+
+#### Relation to Sun Zenith Angle
+
+Next, the interdependence between SD and the ammount of incoming radiation is investigated. The Sun Zenith Angle (SZA) was used as proxy for ilumination conditions. We observe a stronger relationship between SZA and the variability of SIF values from the stationary device (left) and rather weaker relationship between SZA and variability of mobile observations. This can be attributed to factors such as variable duration of measurement and variable LAI at mobile locations.  
+
+```{r, fig.height=6, fig.width=9}
+par(mfrow = c(1,2))
+with(sb.st, plot(SZA, SIF_A_ifld_rollsd5, ylab="Moving SD diurnal SIF in O2A"))
+text(24,.06,bquote(paste("Pearson's ", rho) == .(round(cor(sb.st$SIF_A_ifld_rollsd5, sb.st$SZA),2))), pos=4)
+
+with(sb.st, plot(SZA, SIF_A_ifld.sd.x, ylab="SD Mobile SIF in O2A" ))
+text(24,.06,bquote(paste("Pearson's ", rho) == .(round(cor(sb.st$SIF_A_ifld.sd.x, sb.st$SZA, use = "na.or.complete"),2))), pos=4)
+```
+
+#### Signal-to-Noise Ratio
+
+Finally,the Signal-to-Noise Ratio (SNR) of the mobile measurements were compared to th the environmental, biological, and retrieval factors. SNR was calculated as the average SIF signal per location divided by the SD of SIF at this location. SNR does not show distinct association to any of the factors.  
+
+```{r, fig.height=9, fig.width=9}
+par(mfrow = c(2,2))
+with(sb.st %>% filter(SNR.x < 50), plot(SNR.x, lai.suns))
+text(25,2,bquote(paste("Pearson's ", rho) == .(round(cor(sb.st$lai.suns, sb.st$SNR.x, use = "na.or.complete"),2))), pos=4)
+
+with(sb.st %>% filter(SNR.x < 50), plot(SNR.x, spad))
+text(25,44,bquote(paste("Pearson's ", rho) == .(round(cor(sb.st$spad, sb.st$SNR.x, use = "na.or.complete"),2))), pos=4)
+
+with(sb.st %>% filter(SNR.x < 50), plot(SNR.x, SIF_A_ifld.x))
+text(25,1.2,bquote(paste("Pearson's ", rho) == .(round(cor(sb.st$SIF_A_ifld.x, sb.st$SNR.x, use = "na.or.complete"),2))), pos=4)
+
+with(sb.st %>% filter(SNR.x < 50), plot(SNR.x, SZA))
+text(25,25,bquote(paste("Pearson's ", rho) == .(round(cor(sb.st$SZA, sb.st$SNR.x, use = "na.or.complete"),2))), pos=4)
+
+```
+
+### Results from test case
+
+```{r, fig.height=5, fig.width=9}
+labs <- data.frame(x = as.POSIXct( c("2018-08-03 10:30:24 UTC", "2018-08-03 13:00:00 UTC")),
+                   y = c(1.4,1.72), 
+                   labs = c("Morning", "Afternoon"))
+p2 <- p1 +
+    geom_errorbar(data = mobile.sum,
+                  aes(x = `datetime [UTC]`,y = SIF_A_ifld,  
+                      ymin = SIF_A_ifld - SIF_A_ifld_sd, 
+                      ymax = SIF_A_ifld + SIF_A_ifld_sd), 
+                  width=500) +
+     geom_text(aes(x=x, y=y,label = labs) , data = labs, size =  3,fontface = "bold") + 
+     geom_text(aes(x=x + 1000, y=y,label = paste("LAI =", text$lai)), data = text, size = 3, hjust = 0) 
+#     xlim(as.POSIXct("2018-08-03 06:30:00", tz="GMT"),as.POSIXct( "2018-08-03 16:30:00", tz="GMT")) +
+#     labs(title = "Reference (line) and mobile (points) SIF measurements", 
+#          subtitle = "Morning and afternoon on 02.08.2018", 
+#          x = "Universal Time [UTC]",
+#          y = expression("F 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]"))
+
+cowplot::plot_grid(p2, m2, align = "hv")
+```
+
+
+```{r}
+mobile.sb5.1
+mobile.sb5.2
+```
+
+```{r,eval=FALSE}
+
+change.df <- tibble(unique.loc = mobile.sb5.1$unique.loc, 
+                    deltaSIF = mobile.sb5.2$SIF_A_ifld-mobile.sb5.1$SIF_A_ifld, 
+                    lai = mobile.sb5.1$lai,
+                    sd = sqrt(mobile.sb5.1$sem^2 + mobile.sb5.2$sem^2))
+
+lm_eqn <- function(df){
+  m <- lm(y ~ x, df);
+  eq <- substitute(y == a + b %.% x*","~~R^2~"="~r2, 
+                   list(a = round(as.numeric(coef(m)[1]), 2), 
+                        b = round(as.numeric(coef(m)[2]), 2), 
+                        r2 = round(summary(m)$r.squared, 2)
+                        )
+                   )
+  as.character(as.expression(eq));                 
+}
+tmp <- data.frame(y = change.df$deltaSIF, x = change.df$lai)
+
+change.df
+tmp
+```
+
+```{r, fig.width=9, fig.height=5, eval=FALSE}
+text2 <- tibble(x = mobile.sb5.2$`datetime [UTC]`, y=mobile.sb5.2$SIF_A_ifld)
+
+
+p3 <- p1 +  
+  geom_segment(aes(x = x2, y = y1, xend = x2, yend = y2), data = df) +
+    geom_segment(aes(x = x1, y = y1, xend = x2, yend = y1),lty = 2, data = df) + 
+    geom_text(aes(x=text2$x[1] + 750, y=text2$y[1] - 0.05), label = expression( Delta*"F")) +
+    geom_text(aes(x=text2$x[2] + 750, y=text2$y[2] - 0.065), label = expression( Delta*"F")) + 
+    geom_text(aes(x=text2$x[3] + 750, y=text2$y[3] - 0.17), label = expression( Delta*"F")) +
+     geom_text(aes(x=text2$x[4] + 1000, y=text2$y[4] - 0.25), label = expression( Delta*"F")) 
+
+# 
+p4 <- ggplot(change.df, aes(lai, deltaSIF)) +
+    geom_point(aes(shape = unique.loc), size = 3, stroke = 2) +
+
+    geom_smooth(method = "lm") +
+    geom_errorbar(aes(ymin = deltaSIF - sd, ymax = deltaSIF + sd)) +
+    scale_shape_manual(values=c(0:5)) +
+    labs(title = "Morning/Afternoon Difference vs. LAI") +
+    ylim(0,0.55) + xlim(0,4) +
+    ylab(expression( Delta*"F ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+    xlab(expression("LAI ["~m^{2}%.%m^{-2}~"]")) +
+    theme_bw(base_size = 20) +
+    geom_text(aes(x=3, y=.1, family = "mono"), label = lm_eqn(tmp), parse = TRUE, size = 5) +
+    theme(legend.position = "none") +
+    scale_y_continuous(breaks = seq(0,0.5, by=0.1))
+# summary(with(change.df, lm(deltaSIF ~ lai)))
+
+cowplot::plot_grid(p3,p4, align = "hv")
+```
+
+
+### Developing the theoretical SIF curves 
+
+A theoretical "thought" experiment was conducted based on the findings in previous chapter. The purpose was to find a general formula for correction SIF for time mismatch. First , graphs depicting theoretical diurnal curves of SIF 760 for two LAI and the slope of LAI vs. {*Delta} SIF relationship are produced and presented below, then the generalized correction formula is derived. 
+
+```{r}
+library(reshape2)
+
+f <- function(x,a,b) a*x^2 + b*x 
+data <- data.frame(x = seq(0,1, b = 0.001))
+
+f1 <- function(x) -0.50*x^2 + 0.50*x
+f2 <- function(x) -0.45*x^2 + 0.45*x
+f3 <- function(x) -0.40*x^2 + 0.40*x
+
+data$curv1 <- f1(data$x)
+# data$curv2 <- f2(data$x)
+data$curv3 <- f3(data$x)
+
+vert = c( 0.35, 0.42, 0.5)
+points1 <- 
+  data.frame(x = rep(vert[1],2),
+             y = c(f1(vert[1]), 
+                   # f2(vert[1]),
+                   f3(vert[1])
+             )
+  )
+points2 <- 
+  data.frame(x = rep(vert[2],2),
+             y = c(f1(vert[2]), 
+                   # f2(vert[2]),
+                   f3(vert[2])
+             )
+  )
+
+points3 <- 
+  data.frame(x = rep(vert[3],2),
+             y = c(f1(vert[3]), 
+                   # f2(vert[3]),
+                   f3(vert[3])
+             )
+  )
+
+lai <- 
+  data.frame(x = rep(0.7,2),
+             y = c(f1(0.7), 
+                   # f2(0.7),
+                   f3(0.7)), 
+             text = paste("LAI", c(2:1))
+  )
+
+points <- rbind(points1, points2, points3)
+segments <- data.frame(x1 = c(points1$x, points2$x),
+                       y1 = c(points1$y, points2$y),
+                       x2 = rep(points3$x,2),
+                       y2 = c(points1$y, points2$y) )
+segments2 <- data.frame(x1 = c(points3$x+0.005, points3$x -0.005), 
+                        y1 = c(points1$y, points2$y), 
+                        x2= c(points3$x+0.005, points3$x -0.005), 
+                        y2 = rep(points3$y,2) )
+labels.coord1 <- data.frame( y = c(points2$y + (points3$y - points2$y)/2), x = points3$x - 0.03)
+labels.coord2 <- data.frame( y = c(points1$y + (points3$y - points1$y)/2), x = points3$x + 0.03)
+labels.coord3 <- data.frame( x = points3$x + 0.025, y = points3$y + 0.0015)
+labels.coord4 <- data.frame( x = c(points2$x, points1$x)-0.025, y = c(points2$y, points1$y) +0.0015)
+
+data1 <- melt(data, id="x")
+```
+
+
+```{r, fig.asp=1, fig.height=8}
+size = 6
+plot1 <- ggplot() +
+  geom_line(data = data1, aes(x, value, color=variable), size = 2) + 
+  geom_vline(xintercept = vert, linetype=5) + 
+  geom_point(data = points, aes(x=x, y=y), colour ="black", cex=3) +
+  ylim(0.08,0.135) +
+  ylab(expression("F 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]")) +
+  xlab("Time of the day") +
+  scale_x_continuous(breaks = c(0.35, 0.42, 0.5), 
+                     labels = c(expression(t["o"]), 
+                                expression(t["x"]), 
+                                expression(t["Noon"])) , limits = c(0.30, 0.65)
+                     ) +
+  labs(title = "Theoretical diurnal Fluorescence", subtitle = "For two LAIs")+
+  theme_bw(base_size = 12) +
+  theme(legend.position = 'none',
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
+        axis.text.x = element_text(face = "bold", size = size + 15))  +
+  geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2),
+               data = segments,
+               linetype = 5) +
+  geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), 
+               data = segments2, linetype = 1, lwd=1, 
+               arrow = arrow(type = "closed", angle = 20, length = unit(x=0.1, "inches"))) +
+  geom_segment(aes(x = x2, y = y2, xend = x1, yend = y1), 
+               data = segments2, linetype = 1, lwd=1, 
+               arrow = arrow(type = "closed", angle = 20, length = unit(x=0.1, "inches"))) + 
+  geom_text(aes(x=labels.coord2$x[1], y=labels.coord2$y[1], family="mono"), label = expression( Delta*"F" ["2o"]), colour = "black", size = size) +
+  geom_text(aes(x=labels.coord2$x[2], y=labels.coord2$y[2], family="mono"), label = expression( Delta*"F" ["1o"]), colour = "black", size = size) +
+  geom_text(aes(x=labels.coord1$x[1], y=labels.coord1$y[1], family="mono"), label = expression( Delta*"F" ["2x"]), colour = "black", size = size-3) +
+  geom_text(aes(x=labels.coord1$x[2], y=labels.coord1$y[2], family="mono"), label = expression( Delta*"F" ["1x"]), colour = "black", size = size-3) +
+  geom_text(aes(x=labels.coord3$x[1], y=labels.coord3$y[1], family="mono"), label = expression("F"["2N"]), colour = "black", size = size) +
+  geom_text(aes(x=labels.coord3$x[2], y=labels.coord3$y[2], family="mono"), label = expression("F"["1N"]), colour = "black", size = size) +
+  geom_text(aes(x=labels.coord4$x[1], y=labels.coord4$y[1], family="mono"), label = expression("F"["2x"]), colour = "black", size = size) + 
+  geom_text(aes(x=labels.coord4$x[2], y=labels.coord4$y[2], family="mono"), label = expression("F"["1x"]), colour = "black", size = size) +
+  geom_text(aes(x=labels.coord4$x[3], y=labels.coord4$y[3], family="mono"), label = expression("F"["2o"]), colour = "black", size = size) + 
+  geom_text(aes(x=labels.coord4$x[4], y=labels.coord4$y[4], family="mono"), label = expression("F"["1o"]), colour = "black", size = size) +
+  geom_text(data = lai, aes(x=x - 0.075, y=y + 0.004, family="mono", label = text), colour = "black", size = size) 
+
+plot1
+```
+
+```{r}
+# rm(f,f1, f2, f3, data, points1,points2, 
+#    points3, lai, points, segments, 
+#    segments2, labels.coord1, labels.coord2,
+#    labels.coord3, labels.coord4, data1)
+# 
+# take the default colors from previous graph  
+g_color_hue <- function(n) {
+    hues = seq(15, 375, length = n + 1)
+    hcl(h = hues, l = 65, c = 100)[1:n]
+}
+n = 2
+cols = g_color_hue(n)
+
+# Figure 2 examplifying the correction equation for SIF-validation paper
+a0 = 1.2
+ax = 0.8
+lai = c(lai2 = 2, lai1 = 3.5)
+
+data2 <- data.frame(x=lai, dFt0 = a0*lai, dFtx = ax*lai, cols = cols)
+data3 <- melt(data = data2, id=c("x","cols"))
+
+t.lables <- data.frame(x = c(4,4.8), y=c(a0*4,ax*4.8))
+
+```
+
+```{r, fig.asp=0.8, fig.height=8}
+plot2 <- ggplot() + 
+    geom_point(data = data3, 
+               aes(x=x, y=value), size = 2) +
+    geom_abline(intercept = 0, slope = c(a0,ax, 0.01), size = 1.5) +
+    theme_bw(base_size = 14) +
+    theme(legend.position = "none", panel.grid.major = element_blank()) +
+    scale_y_continuous(expand = c(0, 0),
+                       limits = c(0, 5), 
+                       breaks = c(data3$value, 0),
+                       labels = c(expression( Delta*"F" ["1o"]),
+                                  expression( Delta*"F" ["2o"]),
+                                  expression( Delta*"F" ["1x"]),
+                                  expression( Delta*"F" ["2x"]),
+                                  expression( Delta*"F" ["nx"] %~~% Delta*"F" ["no"] %~~% 0))) +
+    scale_x_continuous(expand = c(0, 0),
+                       limits = c(0, 5),
+                       breaks = data2$x, 
+                       labels = c("LAI 1", "LAI 2")) +
+    geom_segment(aes(x = rep(0,4), xend= data3$x, y=data3$value, yend=data3$value, color = data3$cols),
+                  linetype =5, size = 1.5) +
+    geom_segment(aes(x = data2$x, xend= data2$x, y=c(0,0), yend=data2$dFt0, color = data2$cols),
+                 linetype =5,  size = 1.5) +
+    geom_text(aes(x=t.lables$x[1]-0.5, y=t.lables$y[1]), label= expression("t"["0"]), size = size ) +
+    geom_text(aes(x=t.lables$x[2]-0.5, y=t.lables$y[2]), label= expression("t"["x"]), size = size ) + 
+    geom_text(aes(x=t.lables$x[2]-0.5, y=t.lables$y[2]- 3.5), label= expression("t"["Noon"]), size = size ) +
+    xlab(expression("LAI ["~m^{2}%.%m^{-2}~"]")) +
+    ylab(expression(Delta*"F 760 ["~mW%.%m^{-2}%.%sr^{-1}%.%nm^{-1}~"]"))
+
+plot2
+```
+
+
+Recalculation SIF for any location for any time of the day is possible if there is: 
+
+* at least one SIF measurement at the location of interest - F observation ($F_{o}$) 
+
+* a diurnal SIF curve - F diurnal ($F_{d}$)
+
+* LAI for both location of interest and for location of diurnal measurement ($LAI_{o}$ and $LAI_{d}$)
+
+Then SIF at observation location for any time $x$ is found through: 
+
+\begin{equation} \label{eq:1}
+F_{ox} = F_{oo} + \frac{LAI_o}{LAI_d}.(F_{dx} - F_{do})
+\end{equation}
+
+In equation (1) first suffix is reserved for the location (o - observation (mobile) location, d- diurnal location) and second suffix - for time. In other word, SIF at mobile location $o$ at time $x$ $F_{ox}$ equals the SIF at observation location at observation time $F_{oo}$ corrected by the product of change in diurnal SIF between observation time and time $x$ -  $(F_{dx} - F_{do})$,  and the ratio of LAI for both location -  $\frac{LAI_o}{LAI_d}$
