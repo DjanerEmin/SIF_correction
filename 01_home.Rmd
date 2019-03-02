@@ -26,7 +26,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE, fig.width = 9)
 This is an online resource providing additional information related to my research. The main outcomes in this page were summarized in a poster 
 entitled "Method For Acquiring and Comparing Spatially Explicit Measurements of Sun-induced Flourescence on the Ground". The poster was presented at [EARSEL 2019 Workshop in Brno](http://is.earsel.org/workshop/11-IS-Brno2019/), and will also be presented at the [FLEX 2019 conference in Davos](https://www.fluorescence2019.org/QuickEventWebsitePortal/flex-2019/esa). 
 
-![](visuals/Poster_A0_final.png)
+![](visuals/Poster_A0_final_v02.png)
 
 However, posters and scientific papers, because of their size limitations, constrict clear and detailed reporting on the entire research process. In the age of rich data and methodologies availability, a single research can be very complex. Consequently, the lack of a clear reporting on the many computational steps along the way hinders repeatability of research - an issue discussed [here](https://www.theatlantic.com/science/archive/2018/04/the-scientific-paper-is-obsolete/556676/). One possible solution to improve reproducibility of research is to include an online resource which provides detailed description of data and computational procedures. Notebooks such as Jupiter and Rmarkdown further help structuring text, graphics, and source code. 
 
